@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="theme-color" content="#0A0A0F">
+    <title>داشبورد — پورتال اعضا</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body class="dashboard-body">
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="dash-header">
+    <div class="dash-header-content">
+        <div class="dash-user">
+            <div class="user-avatar" id="userAvatar">👤</div>
+            <div class="user-info">
+                <div class="user-name" id="userName">—</div>
+                <div class="user-code" id="userCode">—</div>
+            </div>
+        </div>
+        
+        <div class="dash-actions">
+            <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="تغییر تم">
+                🌙
+            </button>
+            <button class="icon-btn" onclick="logout()" title="خروج">
+                🚪
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- ============================================================
+     MAIN CONTENT
+     ============================================================ -->
+<main class="dash-container">
+
+    <!-- کارت‌های خلاصه -->
+    <section class="summary-cards">
+        <div class="summary-card">
+            <div class="summary-icon">✅</div>
+            <div class="summary-info">
+                <div class="summary-label">حضور این ماه</div>
+                <div class="summary-value" id="attendanceCount">—</div>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-icon">💰</div>
+            <div class="summary-info">
+                <div class="summary-label">اقساط پرداخت‌نشده</div>
+                <div class="summary-value" id="unpaidCount">—</div>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-icon">📅</div>
+            <div class="summary-info">
+                <div class="summary-label">روز عضویت</div>
+                <div class="summary-value" id="memberDays">—</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- کارت عضویت دیجیتال -->
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span>🪪</span> کارت عضویت من
+            </h2>
+        </div>
+        
+        <div class="member-card">
+            <div class="member-card-bg"></div>
+            <div class="member-card-content">
+                <div class="member-card-logo">💎</div>
+                <div class="member-card-brand">پالس مدیریت</div>
+                
+                <div class="member-card-body">
+                    <div class="member-card-info">
+                        <div class="card-label">نام</div>
+                        <div class="card-value" id="cardName">—</div>
+                    </div>
+                    <div class="member-card-info">
+                        <div class="card-label">کلاس</div>
+                        <div class="card-value" id="cardClass">—</div>
+                    </div>
+                    <div class="member-card-info">
+                        <div class="card-label">کد عضویت</div>
+                        <div class="card-value card-code" id="cardCode">—</div>
+                    </div>
+                    <div class="member-card-info">
+                        <div class="card-label">تاریخ عضویت</div>
+                        <div class="card-value" id="cardJoinDate">—</div>
+                    </div>
+                </div>
+
+                <div class="member-card-footer">
+                    <div class="card-chip"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- اقساط -->
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span>💰</span> اقساط من
+            </h2>
+        </div>
+
+        <div class="list-container" id="installmentsList">
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <div class="empty-text">اطلاعات اقساط در حال بارگذاری...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- پرداخت‌ها -->
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span>💳</span> سابقه‌ی پرداخت‌ها
+            </h2>
+        </div>
+
+        <div class="list-container" id="paymentsList">
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <div class="empty-text">اطلاعات پرداخت‌ها در حال بارگذاری...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- حضور و غیاب -->
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title">
+                <span>✅</span> حضور و غیاب (۳۰ روز اخیر)
+            </h2>
+        </div>
+
+        <div class="attendance-grid" id="attendanceGrid">
+            <div class="empty-state">
+                <div class="empty-icon">📭</div>
+                <div class="empty-text">در حال بارگذاری...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- پشتیبانی -->
+    <section class="section">
+        <div class="support-card">
+            <div class="support-icon">💬</div>
+            <div class="support-content">
+                <h3>نیاز به کمک دارید؟</h3>
+                <p>تیم پشتیبانی ما آماده‌ی پاسخگویی است</p>
+            </div>
+            <button class="btn btn-primary" onclick="contactSupport()">
+                تماس با پشتیبانی
+            </button>
+        </div>
+    </section>
+
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="dash-footer">
+    <div class="footer-text">
+        <span class="footer-brand">پالس مدیریت</span> — نسخه <span id="version"></span>
+    </div>
+</footer>
+
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- App -->
+<script src="js/config.js"></script>
+<script src="js/dashboard.js"></script>
+
+</body>
+</html>
