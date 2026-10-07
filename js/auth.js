@@ -61,11 +61,6 @@ function setupPhoneInput() {
         this.value = value;
     });
 
-    const codeInput = document.getElementById('memberCode');
-    codeInput.addEventListener('input', function(e) {
-        // تبدیل به uppercase
-        this.value = this.value.toUpperCase();
-    });
 }
 
 // ============================================================
@@ -75,14 +70,16 @@ async function handleLogin(event) {
     event.preventDefault();
 
     const phoneInput = document.getElementById('phone');
-    const codeInput = document.getElementById('memberCode');
+    const nameInput = document.getElementById('fullName');
+    const clubInput = document.getElementById('clubName');
     const loginBtn = document.getElementById('loginBtn');
     const btnText = loginBtn.querySelector('.btn-text');
     const spinner = loginBtn.querySelector('.spinner');
     const errorMsg = document.getElementById('errorMsg');
 
     const phone = phoneInput.value.trim();
-    const code = codeInput.value.trim();
+    const fullName = nameInput ? nameInput.value.trim() : '';
+    const clubName = clubInput ? clubInput.value.trim() : '';
 
     // پاک کردن خطای قبلی
     errorMsg.textContent = '';
@@ -93,8 +90,12 @@ async function handleLogin(event) {
         showError('شماره موبایل باید ۱۱ رقم باشد');
         return;
     }
-    if (!code || code.length < 5) {
-        showError('کد عضویت را وارد کنید');
+    if (!fullName || fullName.length < 3) {
+        showError('نام و نام خانوادگی را وارد کنید');
+        return;
+    }
+    if (!clubName || clubName.length < 2) {
+        showError('نام آموزشگاه را وارد کنید');
         return;
     }
 
@@ -105,9 +106,10 @@ async function handleLogin(event) {
 
     try {
         // فراخوانی Supabase function
-        const { data, error } = await supabaseClient.rpc('verify_member_login', {
+        const { data, error } = await supabaseClient.rpc('verify_member_login_v2', {
             p_phone: phone,
-            p_code: code
+            p_full_name: fullName,
+            p_club_name: clubName
         });
 
         if (error) {
@@ -116,15 +118,19 @@ async function handleLogin(event) {
             return;
         }
 
-        // چک نتیجه
-        if (!data || Object.keys(data).length === 0 || !data.id) {
-            showError('شماره موبایل یا کد عضویت اشتباه است');
+        // ─── چک نتیجه ───
+        if (!data || !data.success) {
+            const errorText = (data && data.error) || 'اطلاعات وارد شده اشتباه است';
+            showError(errorText);
             return;
         }
 
-        // ذخیره اطلاعات
+        // ─── ذخیره اطلاعات ───
         const userData = {
-            ...data,
+            ...data.member,
+            gym_id: data.gym.id,
+            gym_name: data.gym.name,
+            gym_phone: data.gym.phone,
             savedAt: new Date().toISOString()
         };
         localStorage.setItem('pulse_user', JSON.stringify(userData));
@@ -165,7 +171,7 @@ function showError(message) {
 // تماس با پشتیبانی
 // ============================================================
 function contactSupport() {
-    const msg = 'سلام 👋\nکد عضویت خود را گم کرده‌ام و نیاز به کمک دارم.';
+    const msg = 'سلام 👋\nدر ورود به پورتال اعضا مشکل دارم و نیاز به کمک دارم.';
     copyToClipboard(msg).then(() => {
         window.open(RUBIKA_URL, '_blank');
     });
