@@ -133,12 +133,7 @@ async function handleLogin(event) {
             gym_phone: data.gym.phone,
             savedAt: new Date().toISOString()
         };
-        // 🔤 نرمال‌سازی join_date (خط تیره → اسلش)
-        if (userData.join_date && typeof userData.join_date === 'string') {
-            userData.join_date = userData.join_date.replace(/-/g, '/');
-        }
         localStorage.setItem('pulse_user', JSON.stringify(userData));
-        console.log('💾 userData ذخیره شد:', userData);
 
         // پیام موفقیت
         btnText.textContent = '✅ خوش آمدید!';

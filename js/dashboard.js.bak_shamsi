@@ -63,9 +63,7 @@ function parseAnyDate(str) {
 
 function toShamsi(date) {
     if (!date || isNaN(date.getTime())) return '—';
-    let gy = date.getFullYear();
-    const gm = date.getMonth() + 1;
-    const gd = date.getDate();
+    const gy = date.getFullYear(), gm = date.getMonth() + 1, gd = date.getDate();
     let g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
     let jy = (gy <= 1600) ? 0 : 979;
     gy -= (gy <= 1600) ? 621 : 1600;

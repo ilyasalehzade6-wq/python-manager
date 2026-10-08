@@ -63,9 +63,7 @@ function parseAnyDate(str) {
 
 function toShamsi(date) {
     if (!date || isNaN(date.getTime())) return '—';
-    let gy = date.getFullYear();
-    const gm = date.getMonth() + 1;
-    const gd = date.getDate();
+    const gy = date.getFullYear(), gm = date.getMonth() + 1, gd = date.getDate();
     let g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
     let jy = (gy <= 1600) ? 0 : 979;
     gy -= (gy <= 1600) ? 621 : 1600;
@@ -123,40 +121,32 @@ document.addEventListener('DOMContentLoaded', () => {
 // نمایش اطلاعات کاربر
 // ============================================================
 function renderUserInfo() {
-    // ─── هدر ───
     document.getElementById('userName').textContent = currentUser.full_name || 'عضو';
     document.getElementById('userCode').textContent = currentUser.member_code || '—';
     document.getElementById('userAvatar').textContent = (currentUser.full_name || 'ع')[0];
 
-    // ─── کارت عضویت ───
+    // کارت عضویت
     document.getElementById('cardName').textContent = currentUser.full_name || '—';
     document.getElementById('cardClass').textContent = currentUser.class_name || '—';
     document.getElementById('cardCode').textContent = currentUser.member_code || '—';
 
-    // ─── تاریخ عضویت ───
-    const rawJoinDate = currentUser.join_date;
-    console.log('📅 join_date خام:', rawJoinDate);
-
-    if (rawJoinDate) {
-        // 🔤 پشتیبانی از فرمت‌های مختلف: 1405/07/16 یا 1405-07-16 یا ISO
-        const joinDate = parseAnyDate(rawJoinDate);
-        console.log('📅 join_date پارس شده:', joinDate);
-
+    // تاریخ عضویت
+    if (currentUser.join_date) {
+        // 🔤 join_date ممکنه شمسی باشه (1405/07/15)
+        const joinDate = parseAnyDate(currentUser.join_date);
         if (joinDate) {
             // نمایش تاریخ به شمسی
-            const shamsiStr = toShamsi(joinDate);
-            document.getElementById('cardJoinDate').textContent =
-                shamsiStr !== '—' ? shamsiStr : String(rawJoinDate);
+            document.getElementById('cardJoinDate').textContent = toShamsi(joinDate) !== '—'
+                ? toShamsi(joinDate)
+                : currentUser.join_date;
 
             // روزهای عضویت
             const diffMs = Date.now() - joinDate.getTime();
             const days = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
             document.getElementById('memberDays').textContent =
                 days.toLocaleString('fa-IR') + ' روز';
-            console.log('📅 روزهای عضویت:', days);
         } else {
-            // fallback: نمایش مستقیم
-            document.getElementById('cardJoinDate').textContent = String(rawJoinDate);
+            document.getElementById('cardJoinDate').textContent = currentUser.join_date;
             document.getElementById('memberDays').textContent = '—';
         }
     } else {
@@ -180,13 +170,9 @@ async function loadData() {
             return;
         }
 
-        console.log('📥 RPC response:', data);
-
         const payments = data?.payments || [];
         const installments = data?.installments || [];
         const attendances = data?.attendances || [];
-
-        console.log(`📊 دریافت شد: ${payments.length} پرداخت، ${installments.length} قسط، ${attendances.length} حضور`);
 
         renderInstallments(installments);
         renderPayments(payments);
