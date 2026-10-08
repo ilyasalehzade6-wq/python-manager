@@ -5,6 +5,83 @@
 let supabaseClient = null;
 let currentUser = null;
 
+// ═══════════════════════════════════════════════════════════
+//  🔤 تبدیل تاریخ شمسی به میلادی
+// ═══════════════════════════════════════════════════════════
+function shamsiToGregorian(shamsiStr) {
+    if (!shamsiStr) return null;
+    const parts = String(shamsiStr).replace(/-/g, '/').split('/').map(s => parseInt(s.trim(), 10));
+    if (parts.length !== 3 || parts.some(isNaN)) return null;
+    const [jy, jm, jd] = parts;
+
+    let gy, gm, gd;
+    const jy2 = jy - 979, jm2 = jm - 1, jd2 = jd - 1;
+
+    let jDayNo = 365 * jy2 + Math.floor(jy2 / 33) * 8 + Math.floor((jy2 % 33 + 3) / 4);
+    const mArr = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
+    for (let i = 0; i < jm2; i++) jDayNo += mArr[i];
+    jDayNo += jd2;
+
+    let gDayNo = jDayNo + 79;
+    gy = 1600 + 400 * Math.floor(gDayNo / 146097);
+    gDayNo %= 146097;
+
+    let leap = true;
+    if (gDayNo >= 36525) {
+        gDayNo--;
+        gy += 100 * Math.floor(gDayNo / 36524);
+        gDayNo %= 36524;
+        if (gDayNo >= 365) gDayNo++;
+        else leap = false;
+    }
+    gy += 4 * Math.floor(gDayNo / 1461);
+    gDayNo %= 1461;
+    if (gDayNo >= 366) {
+        leap = false;
+        gDayNo--;
+        gy += Math.floor(gDayNo / 365);
+        gDayNo %= 365;
+    }
+    const gMonths = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    for (let i = 0; i < 12; i++) {
+        if (gDayNo < gMonths[i]) { gm = i + 1; gd = gDayNo + 1; break; }
+        gDayNo -= gMonths[i];
+    }
+    return new Date(gy, gm - 1, gd);
+}
+
+function parseAnyDate(str) {
+    if (!str) return null;
+    const parts = String(str).replace(/-/g, '/').split('/').map(s => parseInt(s.trim(), 10));
+    if (parts.length === 3 && !parts.some(isNaN)) {
+        const y = parts[0];
+        if (y >= 1300 && y <= 1500) return shamsiToGregorian(str);
+    }
+    const d = new Date(str);
+    return isNaN(d.getTime()) ? null : d;
+}
+
+function toShamsi(date) {
+    if (!date || isNaN(date.getTime())) return '—';
+    const gy = date.getFullYear(), gm = date.getMonth() + 1, gd = date.getDate();
+    let g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+    let jy = (gy <= 1600) ? 0 : 979;
+    gy -= (gy <= 1600) ? 621 : 1600;
+    let gy2 = (gm > 2) ? (gy + 1) : gy;
+    let days = (365 * gy) + Math.floor((gy2 + 3) / 4) - Math.floor((gy2 + 99) / 100) + Math.floor((gy2 + 399) / 400) - 80 + gd + g_d_m[gm - 1];
+    jy += 33 * Math.floor(days / 12053);
+    days %= 12053;
+    jy += 4 * Math.floor(days / 1461);
+    days %= 1461;
+    if (days > 365) { jy += Math.floor((days - 1) / 365); days = (days - 1) % 365; }
+    let jm, jd;
+    if (days < 186) { jm = 1 + Math.floor(days / 31); jd = 1 + (days % 31); }
+    else { jm = 7 + Math.floor((days - 186) / 30); jd = 1 + ((days - 186) % 30); }
+    return `${jy}/${String(jm).padStart(2, '0')}/${String(jd).padStart(2, '0')}`;
+}
+// ═══════════════════════════════════════════════════════════
+
+
 // ============================================================
 // راه‌اندازی
 // ============================================================
@@ -55,12 +132,23 @@ function renderUserInfo() {
 
     // تاریخ عضویت
     if (currentUser.join_date) {
-        const joinDate = new Date(currentUser.join_date);
-        document.getElementById('cardJoinDate').textContent = formatDate(joinDate);
+        // 🔤 join_date ممکنه شمسی باشه (1405/07/15)
+        const joinDate = parseAnyDate(currentUser.join_date);
+        if (joinDate) {
+            // نمایش تاریخ به شمسی
+            document.getElementById('cardJoinDate').textContent = toShamsi(joinDate) !== '—'
+                ? toShamsi(joinDate)
+                : currentUser.join_date;
 
-        // روزهای عضویت
-        const days = Math.floor((Date.now() - joinDate.getTime()) / (1000 * 60 * 60 * 24));
-        document.getElementById('memberDays').textContent = days + ' روز';
+            // روزهای عضویت
+            const diffMs = Date.now() - joinDate.getTime();
+            const days = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+            document.getElementById('memberDays').textContent =
+                days.toLocaleString('fa-IR') + ' روز';
+        } else {
+            document.getElementById('cardJoinDate').textContent = currentUser.join_date;
+            document.getElementById('memberDays').textContent = '—';
+        }
     } else {
         document.getElementById('cardJoinDate').textContent = '—';
         document.getElementById('memberDays').textContent = '—';
@@ -113,7 +201,7 @@ function updateSummary(payments, installments, attendances) {
     const currentYear = now.getFullYear();
     
     const thisMonthAttendance = attendances.filter(a => {
-        const d = new Date(a.attendance_date);
+        const d = parseAnyDate(a.attendance_date);
         return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
     }).length;
     
@@ -137,7 +225,7 @@ function renderInstallments(items) {
     }
 
     container.innerHTML = items.map(item => {
-        const dueDate = new Date(item.due_date);
+        const dueDate = parseAnyDate(item.due_date);
         const isOverdue = !item.is_paid && dueDate < new Date();
 
         let badge = '';
@@ -186,7 +274,7 @@ function renderPayments(items) {
     }
 
     container.innerHTML = items.slice(0, 10).map(item => {
-        const payDate = new Date(item.payment_date);
+        const payDate = parseAnyDate(item.payment_date);
         return `
             <div class="list-item">
                 <div class="list-item-left">
@@ -219,7 +307,7 @@ function renderAttendances(items) {
     }
 
     container.innerHTML = items.slice(0, 30).map(item => {
-        const date = new Date(item.attendance_date);
+        const date = parseAnyDate(item.attendance_date);
         const isPresent = item.status === 'present';
         
         const day = String(date.getDate()).padStart(2, '0');
@@ -254,10 +342,8 @@ function showEmptyStates(message) {
 // ============================================================
 function formatDate(date) {
     if (!date || isNaN(date.getTime())) return '—';
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}/${m}/${d}`;
+    // 🔤 نمایش شمسی
+    return toShamsi(date);
 }
 
 function formatMoney(amount) {
