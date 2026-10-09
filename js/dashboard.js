@@ -83,6 +83,28 @@ function toShamsi(date) {
 }
 // ═══════════════════════════════════════════════════════════
 
+// 🔤 نسخه‌ی محلی toShamsiDisplay (بدون وابستگی به license-utils)
+function toShamsiDisplay(dateInput) {
+    if (!dateInput) return '—';
+
+    // اگه از قبل شمسی هست
+    if (typeof dateInput === 'string') {
+        const m = dateInput.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+        if (m) {
+            const year = parseInt(m[1]);
+            if (year >= 1300 && year <= 1500) {
+                return `${m[1]}/${m[2].padStart(2, '0')}/${m[3].padStart(2, '0')}`;
+            }
+        }
+    }
+
+    // تبدیل میلادی به شمسی
+    const parsed = parseAnyDate(dateInput);
+    if (!parsed) return String(dateInput);
+
+    return toShamsi(parsed);
+}
+
 
 // ============================================================
 // راه‌اندازی
