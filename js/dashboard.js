@@ -262,10 +262,10 @@ function renderTuitions(items) {
             const paidTotal = paid.reduce((sum, t) => sum + (Number(t.paid_amount) || Number(t.amount) || 0), 0);
 
             document.getElementById('tuitionUnpaidAmount').textContent = formatMoney(unpaidTotal);
-            document.getElementById('tuitionUnpaidCount').textContent = formatNumber(unpaid.length) + ' مورد';
+            document.getElementById('tuitionUnpaidCount').textContent = toPersianDigits(unpaid.length) + ' مورد';
 
             document.getElementById('tuitionPaidAmount').textContent = formatMoney(paidTotal);
-            document.getElementById('tuitionPaidCount').textContent = formatNumber(paid.length) + ' مورد';
+            document.getElementById('tuitionPaidCount').textContent = toPersianDigits(paid.length) + ' مورد';
 
             summary.style.display = 'grid';
         } else {
