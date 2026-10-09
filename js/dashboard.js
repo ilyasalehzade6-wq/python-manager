@@ -216,6 +216,27 @@ async function loadData() {
 
         console.log(`📊 دریافت شد: ${payments.length} پرداخت، ${installments.length} قسط، ${attendances.length} حضور`);
 
+        // ─── بارگذاری اعلان‌ها ───
+        try {
+            const { data: notifsData, error: notifsError } = await supabaseClient.rpc(
+                'get_member_notifications',
+                { p_member_id: currentUser.id }
+            );
+
+            if (notifsError) {
+                console.warn('notifications error:', notifsError);
+                renderNotifications([], 0);
+            } else {
+                const notifications = notifsData?.notifications || [];
+                const unread = notifsData?.unread_count || 0;
+                console.log(`🔔 ${notifications.length} اعلان (${unread} نخوانده)`);
+                renderNotifications(notifications, unread);
+            }
+        } catch (err) {
+            console.warn('notifications load exception:', err);
+            renderNotifications([], 0);
+        }
+
         // ─── بارگذاری شهریه‌ها (RPC جداگانه) ───
         try {
             const { data: tuitionsData, error: tuitionsError } = await supabaseClient.rpc(
@@ -268,6 +289,124 @@ function updateSummary(payments, installments, attendances) {
     }).length;
     
     document.getElementById('attendanceCount').textContent = thisMonthAttendance;
+}
+
+
+
+// ═══════════════════════════════════════════════════════
+//  🔔 رندر اعلان‌ها
+// ═══════════════════════════════════════════════════════
+function renderNotifications(notifications, unreadCount) {
+    const container = document.getElementById('notificationsList');
+    const badge = document.getElementById('notifBadge');
+    const markAllBtn = document.getElementById('markAllBtn');
+
+    if (!container) return;
+
+    // ─── بج ───
+    if (badge) {
+        if (unreadCount > 0) {
+            badge.textContent = toPersianDigits(unreadCount);
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    // ─── دکمه خواندن همه ───
+    if (markAllBtn) {
+        markAllBtn.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+    }
+
+    // ─── لیست ───
+    if (!notifications || notifications.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">🔔</div>
+                <div class="empty-text">هیچ اعلانی برای شما وجود ندارد</div>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = notifications.map(n => {
+        const borderColor = n.color || '#3498db';
+        const isUnread = !n.is_read;
+
+        return `
+            <div class="notif-item ${isUnread ? 'unread' : ''}"
+                 style="border-right-color: ${borderColor};"
+                 onclick="markNotifRead('${n.id}')">
+                <div class="notif-icon">${n.icon || '🔔'}</div>
+                <div class="notif-content">
+                    <div class="notif-title">${n.title || ''}</div>
+                    <div class="notif-message">${n.message || ''}</div>
+                    <div class="notif-date">${formatAnyDate(n.created_date)}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+
+// ─── Mark one read ───
+async function markNotifRead(notifId) {
+    try {
+        // به سرور اطلاع بده (اختیاری — فعلاً فقط local)
+        // در آینده می‌تونه RPC mark_notification_read رو صدا بزنه
+        const item = event.target.closest('.notif-item');
+        if (item && item.classList.contains('unread')) {
+            item.classList.remove('unread');
+            // آپدیت بج
+            const badge = document.getElementById('notifBadge');
+            if (badge) {
+                const current = parseInt(badge.textContent.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 0;
+                const newCount = Math.max(0, current - 1);
+                if (newCount > 0) {
+                    badge.textContent = toPersianDigits(newCount);
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('markNotifRead:', e);
+    }
+}
+
+
+// ─── Mark all read ───
+async function markAllNotifsRead() {
+    try {
+        const items = document.querySelectorAll('.notif-item.unread');
+        items.forEach(item => item.classList.remove('unread'));
+
+        const badge = document.getElementById('notifBadge');
+        if (badge) badge.style.display = 'none';
+
+        const markAllBtn = document.getElementById('markAllBtn');
+        if (markAllBtn) markAllBtn.style.display = 'none';
+
+        // RPC برای sync
+        try {
+            await supabaseClient.rpc('mark_all_notifications_read', {
+                p_member_id: currentUser.id
+            });
+        } catch (e) {
+            console.warn('mark_all RPC:', e);
+        }
+    } catch (e) {
+        console.error('markAllNotifsRead:', e);
+    }
+}
+
+
+// ─── Toggle panel ───
+function toggleNotifsPanel() {
+    const section = document.getElementById('notificationsSection');
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 

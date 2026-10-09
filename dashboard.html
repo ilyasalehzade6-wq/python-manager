@@ -27,6 +27,11 @@
         
         <div class="dash-actions">
             <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="تغییر تم">
+                <button class="notif-bell" id="notifBellBtn" onclick="toggleNotifsPanel()" title="اعلان‌ها">
+                    🔔
+                    <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+                </button>
+
                 🌙
             </button>
             <button class="icon-btn" onclick="logout()" title="خروج">
@@ -122,6 +127,24 @@
     <!-- ═══════════════════════════════════════════════════ -->
 <!--  💰 شهریه‌های من                                    -->
 <!-- ═══════════════════════════════════════════════════ -->
+
+<!-- 🔔 بخش اعلان‌های من -->
+<section class="dashboard-section" id="notificationsSection">
+    <h2 class="section-title">
+        <span>🔔</span> اعلان‌های من
+        <button class="mark-all-btn" onclick="markAllNotifsRead()" id="markAllBtn" style="display:none;">
+            ✅ خواندن همه
+        </button>
+    </h2>
+
+    <div class="list-container" id="notificationsList">
+        <div class="empty-state">
+            <div class="empty-icon">🔔</div>
+            <div class="empty-text">در حال بارگذاری...</div>
+        </div>
+    </div>
+</section>
+
 <section class="dashboard-section" id="tuitionsSection">
     <h2 class="section-title">
         <span>💰</span> شهریه‌های من
