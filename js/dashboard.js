@@ -188,6 +188,26 @@ async function loadData() {
 
         console.log(`📊 دریافت شد: ${payments.length} پرداخت، ${installments.length} قسط، ${attendances.length} حضور`);
 
+        // ─── بارگذاری شهریه‌ها (RPC جداگانه) ───
+        try {
+            const { data: tuitionsData, error: tuitionsError } = await supabaseClient.rpc(
+                'get_member_tuitions',
+                { p_member_id: currentUser.id }
+            );
+
+            if (tuitionsError) {
+                console.warn('tuitions error:', tuitionsError);
+                renderTuitions([]);
+            } else {
+                const tuitions = tuitionsData?.tuitions || [];
+                console.log(`💰 ${tuitions.length} شهریه دریافت شد`);
+                renderTuitions(tuitions);
+            }
+        } catch (err) {
+            console.warn('tuitions load exception:', err);
+            renderTuitions([]);
+        }
+
         renderInstallments(installments);
         renderPayments(payments);
         renderAttendances(attendances);
@@ -221,6 +241,135 @@ function updateSummary(payments, installments, attendances) {
     
     document.getElementById('attendanceCount').textContent = thisMonthAttendance;
 }
+
+
+// ============================================================
+// 💰 رندر شهریه‌ها
+// ============================================================
+function renderTuitions(items) {
+    const container = document.getElementById('tuitionsList');
+    const summary = document.getElementById('tuitionSummary');
+
+    if (!container) return;
+
+    // ─── خلاصه ───
+    if (summary) {
+        if (items && items.length > 0) {
+            const unpaid = items.filter(t => !t.is_paid);
+            const paid = items.filter(t => t.is_paid);
+
+            const unpaidTotal = unpaid.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+            const paidTotal = paid.reduce((sum, t) => sum + (Number(t.paid_amount) || Number(t.amount) || 0), 0);
+
+            document.getElementById('tuitionUnpaidAmount').textContent = formatMoney(unpaidTotal);
+            document.getElementById('tuitionUnpaidCount').textContent = formatNumber(unpaid.length) + ' مورد';
+
+            document.getElementById('tuitionPaidAmount').textContent = formatMoney(paidTotal);
+            document.getElementById('tuitionPaidCount').textContent = formatNumber(paid.length) + ' مورد';
+
+            summary.style.display = 'grid';
+        } else {
+            summary.style.display = 'none';
+        }
+    }
+
+    // ─── لیست ───
+    if (!items || items.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">💰</div>
+                <div class="empty-text">هیچ شهریه‌ای برای شما ثبت نشده است</div>
+            </div>
+        `;
+        return;
+    }
+
+    // مرتب‌سازی: پرداخت‌نشده‌ها بالا
+    const sorted = [...items].sort((a, b) => {
+        if (a.is_paid === b.is_paid) return 0;
+        return a.is_paid ? 1 : -1;
+    });
+
+    container.innerHTML = sorted.map(item => {
+        const isPaid = !!item.is_paid;
+
+        // ─── تبدیل ماه به فارسی ───
+        const monthDisplay = formatShamsiMonth(item.month);
+
+        // ─── وضعیت ───
+        let badgeHtml = '';
+        let dateInfo = '';
+
+        if (isPaid) {
+            badgeHtml = '<div class="list-item-badge badge-success">✅ پرداخت‌شده</div>';
+            dateInfo = `پرداخت: ${formatAnyDate(item.paid_at)}`;
+        } else {
+            // چک کن معوقه یا در انتظار
+            const isOverdue = isOverdueDate(item.due_date);
+            if (isOverdue) {
+                badgeHtml = '<div class="list-item-badge badge-danger">⚠️ معوق</div>';
+            } else {
+                badgeHtml = '<div class="list-item-badge badge-warning">⏳ در انتظار</div>';
+            }
+            dateInfo = `سررسید: ${formatAnyDate(item.due_date)}`;
+        }
+
+        return `
+            <div class="list-item">
+                <div class="list-item-left">
+                    <div class="list-item-title">📅 ${monthDisplay}</div>
+                    <div class="list-item-subtitle">${item.class_name || '—'} • ${dateInfo}</div>
+                </div>
+                <div class="list-item-right">
+                    <div class="list-item-amount">${formatMoney(item.amount)}</div>
+                    ${badgeHtml}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+
+// ─── تبدیل ماه شمسی "1405/07" به "مهر ۱۴۰۵" ───
+function formatShamsiMonth(month) {
+    if (!month) return '—';
+    const parts = String(month).split('/');
+    if (parts.length !== 2) return month;
+
+    const year = parts[0];
+    const mon = parseInt(parts[1], 10);
+    const names = ['', 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+                   'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+    const name = names[mon] || '?';
+    return `${name} ${toPersianDigits(year)}`;
+}
+
+
+// ─── چک معوق ───
+function isOverdueDate(dueDate) {
+    if (!dueDate) return false;
+    // تاریخ شمسی YYYY/MM/DD
+    const m = String(dueDate).match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+    if (!m) return false;
+
+    const today = toShamsiDisplay(new Date());
+    return dueDate < today;
+}
+
+
+// ─── فرمت هر تاریخ ───
+function formatAnyDate(d) {
+    if (!d) return '—';
+    return toShamsiDisplay(d);
+}
+
+
+// ─── تبدیل اعداد به فارسی ───
+function toPersianDigits(str) {
+    const map = {'0':'۰','1':'۱','2':'۲','3':'۳','4':'۴','5':'۵','6':'۶','7':'۷','8':'۸','9':'۹'};
+    return String(str).replace(/[0-9]/g, d => map[d]);
+}
+
 
 // ============================================================
 // رندر اقساط
