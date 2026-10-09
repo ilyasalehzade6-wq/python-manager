@@ -348,11 +348,10 @@ function formatShamsiMonth(month) {
 // ─── چک معوق ───
 function isOverdueDate(dueDate) {
     if (!dueDate) return false;
-    // تاریخ شمسی YYYY/MM/DD
     const m = String(dueDate).match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
     if (!m) return false;
 
-    const today = toShamsiDisplay(new Date());
+    const today = toShamsi(new Date());
     return dueDate < today;
 }
 
@@ -360,7 +359,18 @@ function isOverdueDate(dueDate) {
 // ─── فرمت هر تاریخ ───
 function formatAnyDate(d) {
     if (!d) return '—';
-    return toShamsiDisplay(d);
+    // 🔤 از toShamsi استفاده کن (توی همین فایل تعریف شده)
+    // اگه toShamsiDisplay بود ازش استفاده کن
+    if (typeof toShamsiDisplay === 'function') {
+        return toShamsiDisplay(d);
+    }
+    // fallback: parseAnyDate + toShamsi
+    const parsed = parseAnyDate(d);
+    if (parsed) {
+        return toShamsi(parsed);
+    }
+    // اگه از قبل شمسی هست
+    return String(d);
 }
 
 
