@@ -109,7 +109,39 @@
     </section>
 
     <!-- اقساط -->
-    <section class="section">
+    <!-- ═══════════════════════════════════════════════════ -->
+<!--  💰 شهریه‌های من                                    -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section class="dashboard-section" id="tuitionsSection">
+    <h2 class="section-title">
+        <span>💰</span> شهریه‌های من
+    </h2>
+
+    <!-- ─── خلاصه ─── -->
+    <div class="tuition-summary" id="tuitionSummary" style="display: none;">
+        <div class="tuition-summary-card unpaid">
+            <div class="tuition-summary-label">⏳ معوق</div>
+            <div class="tuition-summary-value" id="tuitionUnpaidAmount">۰</div>
+            <div class="tuition-summary-sub" id="tuitionUnpaidCount">۰ مورد</div>
+        </div>
+        <div class="tuition-summary-card paid">
+            <div class="tuition-summary-label">✅ پرداخت‌شده</div>
+            <div class="tuition-summary-value" id="tuitionPaidAmount">۰</div>
+            <div class="tuition-summary-sub" id="tuitionPaidCount">۰ مورد</div>
+        </div>
+    </div>
+
+    <!-- ─── لیست ─── -->
+    <div class="list-container" id="tuitionsList">
+        <div class="empty-state">
+            <div class="empty-icon">💰</div>
+            <div class="empty-text">در حال بارگذاری...</div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── اقساط من ─── -->
+<section class="section">
         <div class="section-header">
             <h2 class="section-title">
                 <span>💰</span> اقساط من

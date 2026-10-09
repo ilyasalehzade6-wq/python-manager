@@ -1,0 +1,435 @@
+/* ============================================================
+   🎨 متغیرها
+   ============================================================ */
+:root, [data-theme="dark"] {
+    --bg: #0A0A0F;
+    --bg-2: #0F0F18;
+    --card: #15151E;
+    --card-2: #1C1C28;
+    --card-3: #252535;
+    --gold: #F1C40F;
+    --gold-2: #D4AC0D;
+    --green: #2ECC71;
+    --green-2: #27AE60;
+    --red: #E74C3C;
+    --blue: #3498DB;
+    --purple: #9B59B6;
+    --cyan: #1ABC9C;
+    --text: #FFFFFF;
+    --text-2: #D0D0DD;
+    --text-dim: #808090;
+    --border: rgba(241, 196, 15, 0.15);
+    --border-2: rgba(255, 255, 255, 0.06);
+    --shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    --input-bg: #1C1C28;
+}
+
+[data-theme="light"] {
+    --bg: #F5F5FA;
+    --bg-2: #EBEBF3;
+    --card: #FFFFFF;
+    --card-2: #F8F8FC;
+    --card-3: #EFEFF6;
+    --gold: #D4AC0D;
+    --gold-2: #B8930D;
+    --green: #27AE60;
+    --green-2: #219150;
+    --red: #E74C3C;
+    --blue: #2980B9;
+    --purple: #8E44AD;
+    --cyan: #16A085;
+    --text: #1A1A2E;
+    --text-2: #404055;
+    --text-dim: #707085;
+    --border: rgba(212, 172, 13, 0.25);
+    --border-2: rgba(0, 0, 0, 0.08);
+    --shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+    --input-bg: #F0F0F8;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+    background: var(--bg);
+    background-image: 
+        radial-gradient(circle at 15% 10%, rgba(241,196,15,0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 90%, rgba(52,152,219,0.06) 0%, transparent 40%);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+    direction: rtl;
+    transition: background 0.3s, color 0.3s;
+}
+
+/* ============================================================
+   🔐 صفحه‌ی ورود
+   ============================================================ */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.auth-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 40px 32px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: var(--shadow);
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(241,196,15,0.05) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+}
+
+.auth-card.shake { animation: shake 0.4s; }
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 32px;
+    position: relative;
+}
+
+.brand-logo {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-2) 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 16px;
+    box-shadow: 0 12px 32px rgba(241, 196, 15, 0.3);
+    animation: pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.brand-name {
+    font-size: 24px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--gold) 0%, #FFD700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 4px;
+}
+
+.brand-subtitle {
+    font-size: 13px;
+    color: var(--text-dim);
+}
+
+/* ============================================================
+   📝 فرم
+   ============================================================ */
+.auth-form {
+    position: relative;
+    z-index: 1;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin-bottom: 8px;
+}
+
+.label-icon { font-size: 15px; }
+
+.form-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--input-bg);
+    border: 1.5px solid var(--border-2);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 15px;
+    transition: all 0.3s;
+    direction: rtl;
+    text-align: right;
+}
+
+.form-input.code-input {
+    direction: ltr;
+    text-align: center;
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 4px rgba(241, 196, 15, 0.1);
+}
+
+.form-input::placeholder {
+    color: var(--text-dim);
+    opacity: 0.6;
+    letter-spacing: normal;
+}
+
+.form-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    padding-right: 4px;
+}
+
+/* ============================================================
+   🔘 دکمه‌ها
+   ============================================================ */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-decoration: none;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.btn:active:not(:disabled) { transform: scale(0.98); }
+.btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-2) 100%);
+    color: #000;
+    box-shadow: 0 8px 24px rgba(241, 196, 15, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+    box-shadow: 0 12px 32px rgba(241, 196, 15, 0.45);
+    transform: translateY(-2px);
+}
+
+.btn-login {
+    margin-top: 8px;
+    height: 54px;
+    font-size: 16px;
+}
+
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(0, 0, 0, 0.2);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   ⚠️ خطا
+   ============================================================ */
+.error-message {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    border-radius: 12px;
+    color: var(--red);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    display: none;
+    animation: fadeIn 0.3s;
+}
+
+.error-message.show { display: block; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   🔗 فوتر
+   ============================================================ */
+.auth-footer {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--border-2);
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.hint-text {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+}
+
+.help-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--gold);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 100px;
+    background: rgba(241, 196, 15, 0.1);
+    border: 1px solid rgba(241, 196, 15, 0.2);
+    transition: all 0.3s;
+}
+
+.help-link:hover {
+    background: rgba(241, 196, 15, 0.2);
+    transform: translateY(-2px);
+}
+
+.version-footer {
+    margin-top: 24px;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+}
+
+/* ============================================================
+   📱 Responsive
+   ============================================================ */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 32px 22px;
+        border-radius: 20px;
+    }
+    
+    .brand-logo {
+        width: 64px;
+        height: 64px;
+        font-size: 32px;
+    }
+    
+    .brand-name {
+        font-size: 21px;
+    }
+}
+
+/* ============================================================
+   🌐 RTL fix for Consolas
+   ============================================================ */
+input[type="tel"] {
+    font-family: 'Consolas', 'Vazirmatn', monospace;
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   💰 خلاصه شهریه‌ها
+   ═══════════════════════════════════════════════════════ */
+.tuition-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 15px 0;
+    padding: 0 15px;
+}
+
+.tuition-summary-card {
+    padding: 18px;
+    border-radius: 12px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.tuition-summary-card:hover {
+    transform: translateY(-2px);
+}
+
+.tuition-summary-card.unpaid {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.15), rgba(231, 76, 60, 0.05));
+    border: 1px solid rgba(231, 76, 60, 0.3);
+}
+
+.tuition-summary-card.paid {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.15), rgba(46, 204, 113, 0.05));
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.tuition-summary-label {
+    font-size: 13px;
+    color: #95a5a6;
+    margin-bottom: 8px;
+}
+
+.tuition-summary-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f1c40f;
+    margin-bottom: 5px;
+}
+
+.tuition-summary-card.unpaid .tuition-summary-value {
+    color: #e74c3c;
+}
+
+.tuition-summary-card.paid .tuition-summary-value {
+    color: #2ecc71;
+}
+
+.tuition-summary-sub {
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+/* موبایل */
+@media (max-width: 480px) {
+    .tuition-summary {
+        grid-template-columns: 1fr;
+    }
+}
