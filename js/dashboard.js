@@ -370,6 +370,9 @@ function toPersianDigits(str) {
     return String(str).replace(/[0-9]/g, d => map[d]);
 }
 
+// 🔧 alias: هر جا formatNumber صدا زده شد، بره به toPersianDigits
+const formatNumber = toPersianDigits;
+
 
 // ============================================================
 // رندر اقساط
