@@ -42,7 +42,17 @@
 <main class="dash-container">
 
     <!-- کارت‌های خلاصه -->
-    <section class="summary-cards">
+    <!-- 🔔 بنر هشدار شهریه‌ی معوق -->
+<div class="overdue-banner" id="overdueBanner" style="display: none;">
+    <div class="overdue-banner-icon">⚠️</div>
+    <div class="overdue-banner-content">
+        <div class="overdue-banner-title" id="overdueTitle">شهریه‌ی معوق</div>
+        <div class="overdue-banner-text" id="overdueText"></div>
+    </div>
+    <div class="overdue-banner-amount" id="overdueAmount"></div>
+</div>
+
+<section class="summary-cards">
         <div class="summary-card">
             <div class="summary-icon">✅</div>
             <div class="summary-info">

@@ -433,3 +433,59 @@ input[type="tel"] {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* ═══════════════════════════════════════════════════════
+   🔔 بنر هشدار معوق
+   ═══════════════════════════════════════════════════════ */
+.overdue-banner {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(231, 76, 60, 0.08));
+    border: 1px solid rgba(231, 76, 60, 0.5);
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin: 15px;
+    animation: pulse-banner 2s ease-in-out infinite;
+}
+
+@keyframes pulse-banner {
+    0%, 100% { border-color: rgba(231, 76, 60, 0.5); }
+    50% { border-color: rgba(231, 76, 60, 0.9); }
+}
+
+.overdue-banner-icon {
+    font-size: 32px;
+    flex-shrink: 0;
+}
+
+.overdue-banner-content {
+    flex: 1;
+}
+
+.overdue-banner-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #e74c3c;
+    margin-bottom: 4px;
+}
+
+.overdue-banner-text {
+    font-size: 13px;
+    color: #95a5a6;
+}
+
+.overdue-banner-amount {
+    font-size: 18px;
+    font-weight: 700;
+    color: #e74c3c;
+    white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+    .overdue-banner {
+        flex-direction: column;
+        text-align: center;
+    }
+}

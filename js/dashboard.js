@@ -79,7 +79,13 @@ function toShamsi(date) {
     let jm, jd;
     if (days < 186) { jm = 1 + Math.floor(days / 31); jd = 1 + (days % 31); }
     else { jm = 7 + Math.floor((days - 186) / 30); jd = 1 + ((days - 186) % 30); }
-    return `${jy}/${String(jm).padStart(2, '0')}/${String(jd).padStart(2, '0')}`;
+    const result = `${jy}/${String(jm).padStart(2, '0')}/${String(jd).padStart(2, '0')}`;
+    // 🔤 تبدیل به اعداد فارسی
+    return result.replace(/[0-9]/g, d => {
+        const map = {'0':'۰','1':'۱','2':'۲','3':'۳','4':'۴',
+                     '5':'۵','6':'۶','7':'۷','8':'۸','9':'۹'};
+        return map[d];
+    });
 }
 // ═══════════════════════════════════════════════════════════
 
@@ -269,6 +275,9 @@ function updateSummary(payments, installments, attendances) {
 // 💰 رندر شهریه‌ها
 // ============================================================
 function renderTuitions(items) {
+    // 🔔 بنر هشدار معوق
+    renderOverdueBanner(items);
+    
     const container = document.getElementById('tuitionsList');
     const summary = document.getElementById('tuitionSummary');
 
@@ -404,6 +413,46 @@ function toPersianDigits(str) {
 
 // 🔧 alias: هر جا formatNumber صدا زده شد، بره به toPersianDigits
 const formatNumber = toPersianDigits;
+
+
+
+// ═══════════════════════════════════════════════════════
+//  🔔 نمایش بنر شهریه‌ی معوق
+// ═══════════════════════════════════════════════════════
+function renderOverdueBanner(tuitions) {
+    const banner = document.getElementById('overdueBanner');
+    if (!banner) return;
+
+    const unpaid = (tuitions || []).filter(t => !t.is_paid);
+
+    if (unpaid.length === 0) {
+        banner.style.display = 'none';
+        return;
+    }
+
+    const total = unpaid.reduce((s, t) => s + (Number(t.amount) || 0), 0);
+
+    document.getElementById('overdueTitle').textContent =
+        unpaid.length === 1 ? 'شهریه‌ی معوق' : `${toPersianDigits(unpaid.length)} شهریه‌ی معوق`;
+
+    document.getElementById('overdueText').textContent =
+        unpaid.length === 1
+            ? 'شما یک شهریه‌ی پرداخت‌نشده دارید'
+            : `شما ${toPersianDigits(unpaid.length)} شهریه‌ی پرداخت‌نشده دارید`;
+
+    document.getElementById('overdueAmount').textContent =
+        toPersianDigits(total.toLocaleString('en-US')) + ' تومان';
+
+    banner.style.display = 'flex';
+}
+
+
+// ─── تبدیل اعداد به فارسی ───
+function toPersianDigits(input) {
+    const map = {'0':'۰','1':'۱','2':'۲','3':'۳','4':'۴',
+                 '5':'۵','6':'۶','7':'۷','8':'۸','9':'۹'};
+    return String(input).replace(/[0-9]/g, d => map[d]);
+}
 
 
 // ============================================================
@@ -546,7 +595,7 @@ function formatDate(date) {
 
 function formatMoney(amount) {
     if (!amount) return '۰';
-    return Number(amount).toLocaleString('fa-IR');
+    return toPersianDigits(Number(amount).toLocaleString('en-US'));
 }
 
 // ============================================================
