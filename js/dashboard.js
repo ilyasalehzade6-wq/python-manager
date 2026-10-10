@@ -410,6 +410,121 @@ function toggleNotifsPanel() {
 }
 
 
+
+// ═══════════════════════════════════════════════════════
+//  📅 نمایش برنامه‌ی کلاس
+// ═══════════════════════════════════════════════════════
+const DAY_NAMES_FA = {
+    'saturday':  'شنبه',
+    'sunday':    'یکشنبه',
+    'monday':    'دوشنبه',
+    'tuesday':   'سه‌شنبه',
+    'wednesday': 'چهارشنبه',
+    'thursday':  'پنجشنبه',
+    'friday':    'جمعه',
+};
+
+const DAY_ORDER = ['saturday', 'sunday', 'monday', 'tuesday',
+                   'wednesday', 'thursday', 'friday'];
+
+const PY_WEEKDAY_JS = {
+    0: 'sunday',
+    1: 'monday',
+    2: 'tuesday',
+    3: 'wednesday',
+    4: 'thursday',
+    5: 'friday',
+    6: 'saturday',
+};
+
+
+function renderClassSchedule(schedules, className) {
+    const section = document.getElementById('classScheduleSection');
+    const daysContainer = document.getElementById('scheduleDays');
+    const classNameEl = document.getElementById('scheduleClassName');
+
+    if (!section || !daysContainer) return;
+
+    // اگه کلاس نداره
+    if (!className) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = 'block';
+    if (classNameEl) classNameEl.textContent = className;
+
+    // اگه برنامه نداره
+    if (!schedules || schedules.length === 0) {
+        daysContainer.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1; padding:20px;">
+                <div class="empty-icon">📅</div>
+                <div class="empty-text">برنامه‌ی هفتگی برای این کلاس تعریف نشده است</div>
+            </div>
+        `;
+        return;
+    }
+
+    // روز امروز
+    const today = PY_WEEKDAY_JS[new Date().getDay()];
+
+    // مرتب‌سازی بر اساس ترتیب هفته
+    const sorted = [...schedules].sort((a, b) => {
+        return DAY_ORDER.indexOf(a.day) - DAY_ORDER.indexOf(b.day);
+    });
+
+    daysContainer.innerHTML = sorted.map(s => {
+        const dayName = DAY_NAMES_FA[s.day] || s.day;
+        const isToday = s.day === today;
+        const timeRange = (s.start_time && s.end_time)
+            ? `${s.start_time} - ${s.end_time}`
+            : (s.start_time || '—');
+
+        return `
+            <div class="schedule-day ${isToday ? 'today' : ''}">
+                <div class="schedule-day-name">${dayName}</div>
+                <div class="schedule-day-time">⏰ ${timeRange}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+
+// ─── بارگذاری برنامه‌ی کلاس ───
+async function loadClassSchedule() {
+    try {
+        if (!currentUser || !currentUser.class_name) {
+            // عضو کلاس نداره
+            const section = document.getElementById('classScheduleSection');
+            if (section) section.style.display = 'none';
+            return;
+        }
+
+        const className = currentUser.class_name;
+        const gymId = currentUser.gym_id || '';
+
+        // RPC
+        const { data, error } = await supabaseClient.rpc('get_class_schedule', {
+            p_class_name: className,
+            p_gym_id: gymId
+        });
+
+        if (error) {
+            console.warn('class schedule RPC error:', error);
+            renderClassSchedule([], className);
+            return;
+        }
+
+        const schedules = data?.schedules || [];
+        console.log(`📅 برنامه‌ی ${className}:`, schedules);
+        renderClassSchedule(schedules, className);
+
+    } catch (err) {
+        console.warn('loadClassSchedule exception:', err);
+    }
+}
+
+
 // ============================================================
 // 💰 رندر شهریه‌ها
 // ============================================================
