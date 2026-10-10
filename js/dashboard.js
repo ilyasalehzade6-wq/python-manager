@@ -216,6 +216,13 @@ async function loadData() {
 
         console.log(`📊 دریافت شد: ${payments.length} پرداخت، ${installments.length} قسط، ${attendances.length} حضور`);
 
+        // ─── بارگذاری برنامه‌ی کلاس ───
+        try {
+            await loadClassSchedule();
+        } catch (e) {
+            console.warn('schedule load:', e);
+        }
+
         // ─── بارگذاری اعلان‌ها ───
         try {
             const { data: notifsData, error: notifsError } = await supabaseClient.rpc(
