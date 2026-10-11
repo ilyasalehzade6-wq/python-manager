@@ -129,6 +129,37 @@
 <!-- ═══════════════════════════════════════════════════ -->
 
 <!-- 🔔 بخش اعلان‌های من -->
+
+<!-- 💬 پیام‌رسان -->
+<section class="dashboard-section" id="chatSection">
+    <h2 class="section-title">
+        <span>💬</span> پیام‌رسان
+        <button class="mark-all-btn" onclick="loadMemberChatRooms()" style="float:left;">🔄 رفرش</button>
+    </h2>
+
+    <!-- حالت ۱: لیست اتاق‌ها -->
+    <div id="memberChatRoomList">
+        <div class="list-container" id="memberChatRoomsList">
+            <div class="loading">در حال بارگذاری...</div>
+        </div>
+    </div>
+
+    <!-- حالت ۲: گفت‌وگو -->
+    <div id="memberChatConversation" style="display: none;">
+        <div class="chat-conv-header">
+            <button class="chat-back-btn" onclick="backToMemberRoomList()">↩️ بازگشت</button>
+            <h3 id="memberChatConvTitle">—</h3>
+        </div>
+
+        <div id="memberChatMessagesList" class="chat-messages-list"></div>
+
+        <div class="chat-input-bar">
+            <textarea id="memberChatMessageInput" placeholder="پیام بنویس..." rows="1" maxlength="1000"></textarea>
+            <button id="memberChatSendBtn" onclick="sendMemberChatMessage()">📤</button>
+        </div>
+    </div>
+</section>
+
 <section class="dashboard-section" id="notificationsSection">
     <h2 class="section-title">
         <span>🔔</span> اعلان‌های من

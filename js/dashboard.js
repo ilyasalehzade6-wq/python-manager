@@ -223,6 +223,9 @@ async function loadData() {
             console.warn('schedule load:', e);
         }
 
+        // ─── بارگذاری چت ───
+        try { await loadMemberChatRooms(); } catch(e) { console.warn(e); }
+
         // ─── بارگذاری اعلان‌ها ───
         try {
             const { data: notifsData, error: notifsError } = await supabaseClient.rpc(
@@ -902,3 +905,242 @@ function contactSupport() {
     
     window.open(RUBIKA_URL, '_blank');
 }
+
+
+// ═══════════════════════════════════════════════════════
+//  💬 پیام‌رسان (پورتال عضو)
+// ═══════════════════════════════════════════════════════
+let memberChatRooms = [];
+let currentMemberRoom = null;
+let memberChatTimer = null;
+let memberLastMsgId = null;
+
+
+async function loadMemberChatRooms() {
+    const list = document.getElementById('memberChatRoomsList');
+    if (!list) return;
+
+    try {
+        list.innerHTML = '<div class="loading">در حال بارگذاری...</div>';
+
+        const { data, error } = await supabaseClient.rpc('member_get_chat_rooms', {
+            p_member_id: currentUser.id
+        });
+
+        if (error || !data?.success) {
+            console.error('member chat rooms error:', error || data);
+            list.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">خطا در بارگذاری</div></div>';
+            return;
+        }
+
+        memberChatRooms = data.rooms || [];
+        console.log(`💬 ${memberChatRooms.length} اتاق دریافت شد`);
+        renderMemberChatRooms();
+    } catch (err) {
+        console.error('loadMemberChatRooms:', err);
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-text">خطای غیرمنتظره</div></div>';
+    }
+}
+
+
+function renderMemberChatRooms() {
+    const list = document.getElementById('memberChatRoomsList');
+    if (!list) return;
+
+    if (memberChatRooms.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">هیچ گفت‌وگویی وجود ندارد</div></div>';
+        return;
+    }
+
+    list.innerHTML = memberChatRooms.map(r => {
+        const isPublic = r.room_type === 'public';
+        const icon = isPublic ? '🌐' : '👤';
+        const name = isPublic ? 'عمومی (همه)' : '👤 گفت‌وگو با مدیر';
+        const lastMsg = (r.last_message || '').substring(0, 60) || '—';
+        const hasUnread = (r.unread || 0) > 0;
+
+        return `
+            <div class="chat-room-item ${isPublic ? 'public' : ''} ${hasUnread ? 'unread' : ''}"
+                 onclick="openMemberChatRoom('${r.room_id}', '${escapeHtml(name)}')">
+                <div class="chat-room-icon">${icon}</div>
+                <div class="chat-room-info">
+                    <div class="chat-room-name">${escapeHtml(name)}</div>
+                    <div class="chat-room-last">${escapeHtml(lastMsg)}</div>
+                </div>
+                ${hasUnread ? `<div class="chat-room-badge">${r.unread}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+
+async function openMemberChatRoom(roomId, roomName) {
+    currentMemberRoom = { id: roomId, name: roomName };
+    memberLastMsgId = null;
+
+    document.getElementById('memberChatRoomList').style.display = 'none';
+    document.getElementById('memberChatConversation').style.display = 'flex';
+    document.getElementById('memberChatConvTitle').textContent = roomName;
+
+    // علامت خوانده‌شده
+    try {
+        await supabaseClient.rpc('member_mark_chat_read', {
+            p_member_id: currentUser.id,
+            p_room_id: roomId
+        });
+    } catch (e) { console.warn(e); }
+
+    await loadMemberChatMessages();
+    startMemberChatRefresh();
+}
+
+
+function backToMemberRoomList() {
+    stopMemberChatRefresh();
+    currentMemberRoom = null;
+    memberLastMsgId = null;
+
+    document.getElementById('memberChatRoomList').style.display = 'block';
+    document.getElementById('memberChatConversation').style.display = 'none';
+
+    loadMemberChatRooms();
+}
+
+
+async function loadMemberChatMessages() {
+    if (!currentMemberRoom) return;
+
+    const list = document.getElementById('memberChatMessagesList');
+    if (!list) return;
+
+    try {
+        const { data, error } = await supabaseClient.rpc('member_get_chat_messages', {
+            p_member_id: currentUser.id,
+            p_room_id: currentMemberRoom.id,
+            p_limit: 100
+        });
+
+        if (error || !data?.success) {
+            console.error('member messages error:', error || data);
+            return;
+        }
+
+        const messages = (data.messages || []).reverse();
+        renderMemberChatMessages(messages);
+
+        if (messages.length > 0) {
+            memberLastMsgId = messages[messages.length - 1].id;
+        }
+    } catch (err) {
+        console.error('loadMemberChatMessages:', err);
+    }
+}
+
+
+function renderMemberChatMessages(messages) {
+    const list = document.getElementById('memberChatMessagesList');
+    if (!list) return;
+
+    if (!messages || messages.length === 0) {
+        list.innerHTML = `
+            <div class="empty-state" style="padding:40px 10px;">
+                <div class="empty-icon">💬</div>
+                <div class="empty-text">هنوز پیامی نیست</div>
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = messages.map(m => {
+        const isMember = m.sender_type === 'member';
+        const sender = isMember ? '👤 من' : '👨‍💼 مدیر';
+        return `
+            <div class="chat-msg ${isMember ? 'member' : 'admin'}">
+                <span class="msg-sender">${sender}</span>
+                ${escapeHtml(m.content)}
+                <span class="msg-meta">${m.time || ''}</span>
+            </div>
+        `;
+    }).join('');
+
+    setTimeout(() => { list.scrollTop = list.scrollHeight; }, 50);
+}
+
+
+async function sendMemberChatMessage() {
+    if (!currentMemberRoom) return;
+
+    const input = document.getElementById('memberChatMessageInput');
+    const btn = document.getElementById('memberChatSendBtn');
+
+    const content = input.value.trim();
+    if (!content) return;
+
+    btn.disabled = true;
+
+    try {
+        const { data, error } = await supabaseClient.rpc('member_send_chat_message', {
+            p_member_id: currentUser.id,
+            p_room_id: currentMemberRoom.id,
+            p_content: content
+        });
+
+        if (error || !data?.success) {
+            console.error('send error:', error || data);
+            return;
+        }
+
+        input.value = '';
+        const list = document.getElementById('memberChatMessagesList');
+        const empty = list.querySelector('.empty-state');
+        if (empty) empty.remove();
+
+        const html = `
+            <div class="chat-msg member">
+                <span class="msg-sender">👤 من</span>
+                ${escapeHtml(content)}
+                <span class="msg-meta">${new Date().toLocaleTimeString('fa-IR', {hour: '2-digit', minute:'2-digit'})}</span>
+            </div>
+        `;
+        list.insertAdjacentHTML('beforeend', html);
+        setTimeout(() => { list.scrollTop = list.scrollHeight; }, 30);
+
+    } catch (err) {
+        console.error('sendMemberChatMessage:', err);
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+
+function startMemberChatRefresh() {
+    stopMemberChatRefresh();
+    memberChatTimer = setInterval(async () => {
+        if (!currentMemberRoom) return;
+        await loadMemberChatMessages();
+    }, 3000);  // 🔄 هر ۳ ثانیه
+}
+
+
+function stopMemberChatRefresh() {
+    if (memberChatTimer) {
+        clearInterval(memberChatTimer);
+        memberChatTimer = null;
+    }
+}
+
+
+// Enter برای ارسال
+document.addEventListener('DOMContentLoaded', () => {
+    const inp = document.getElementById('memberChatMessageInput');
+    if (inp) {
+        inp.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMemberChatMessage();
+            }
+        });
+    }
+});
+
+
