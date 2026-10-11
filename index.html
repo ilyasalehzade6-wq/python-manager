@@ -8,6 +8,51 @@
     
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/style.css">
+
+<style>
+.apk-download-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #f1c40f, #e67e22);
+    color: #0f0f1a;
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 8px 25px rgba(241,196,15,0.4);
+    z-index: 9998;
+    transition: all 0.3s;
+    font-family: inherit;
+    direction: rtl;
+}
+.apk-download-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 35px rgba(241,196,15,0.6);
+}
+.apk-icon {
+    font-size: 20px;
+}
+@media (max-width: 600px) {
+    .apk-download-btn {
+        bottom: 15px;
+        left: 15px;
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+    .apk-text {
+        display: none;
+    }
+    .apk-icon {
+        font-size: 24px;
+    }
+}
+</style>
+
 </head>
 <body>
 
@@ -106,12 +151,12 @@
 </div>
 
 <!-- Supabase SDK -->
-<script src="js/license-utils.js?v=20261009012916"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=20261009012916"></script>
+<script src="js/license-utils.js?v=20261011235253"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=20261011235253"></script>
 
 <!-- App -->
-<script src="js/config.js?v=20261009012916"></script>
-<script src="js/auth.js?v=20261009012916"></script>
+<script src="js/config.js?v=20261011235253"></script>
+<script src="js/auth.js?v=20261011235253"></script>
 
 <script>
     document.getElementById('version').textContent = APP_VERSION;
@@ -132,6 +177,16 @@
     });
   }
 </script>
+
+
+<!-- 📱 دکمه دانلود اپلیکیشن -->
+<a href="downloads/PulsePortal.apk" 
+   class="apk-download-btn" 
+   download
+   title="دانلود اپلیکیشن موبایل">
+    <span class="apk-icon">📱</span>
+    <span class="apk-text">نصب اپلیکیشن</span>
+</a>
 
 </body>
 </html>
