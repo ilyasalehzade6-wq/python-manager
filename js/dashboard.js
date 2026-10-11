@@ -996,6 +996,11 @@ async function openMemberChatRoom(roomId, roomName) {
     document.getElementById('memberChatConversation').style.display = 'flex';
     document.getElementById('memberChatConvTitle').textContent = roomName;
 
+    // 📱 روی موبایل، اسکرول کن به بالا
+    try {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {}
+
     // علامت خوانده‌شده
     try {
         await supabaseClient.rpc('member_mark_chat_read', {
@@ -1059,7 +1064,7 @@ function renderMemberChatMessages(messages) {
         list.innerHTML = `
             <div class="empty-state" style="padding:40px 10px;">
                 <div class="empty-icon">💬</div>
-                <div class="empty-text">هنوز پیامی نیست</div>
+                <div class="empty-text">هنوز پیامی نیست<br>اولین پیام را بفرستید</div>
             </div>
         `;
         return;
@@ -1071,13 +1076,16 @@ function renderMemberChatMessages(messages) {
         return `
             <div class="chat-msg ${isMember ? 'member' : 'admin'}">
                 <span class="msg-sender">${sender}</span>
-                ${escapeHtml(m.content)}
+                <div>${escapeHtml(m.content)}</div>
                 <span class="msg-meta">${m.time || ''}</span>
             </div>
         `;
     }).join('');
 
-    setTimeout(() => { list.scrollTop = list.scrollHeight; }, 50);
+    // اسکرول به آخر
+    setTimeout(() => {
+        if (list) list.scrollTop = list.scrollHeight;
+    }, 100);
 }
 
 
