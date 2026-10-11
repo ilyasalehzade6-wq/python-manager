@@ -8,8 +8,8 @@
     
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/style.css">
-
 <style>
+/* 📱 دکمه دانلود اپلیکیشن */
 .apk-download-btn {
     position: fixed;
     bottom: 20px;
@@ -19,24 +19,28 @@
     gap: 8px;
     background: linear-gradient(135deg, #f1c40f, #e67e22);
     color: #0f0f1a;
-    padding: 12px 20px;
+    padding: 12px 22px;
     border-radius: 30px;
     font-size: 14px;
     font-weight: 700;
     text-decoration: none;
-    box-shadow: 0 8px 25px rgba(241,196,15,0.4);
-    z-index: 9998;
-    transition: all 0.3s;
+    box-shadow: 0 8px 25px rgba(241,196,15,0.5);
+    z-index: 99998;
+    transition: all 0.3s ease;
     font-family: inherit;
     direction: rtl;
+    border: 2px solid rgba(241,196,15,0.8);
+    animation: apk-bounce 3s infinite;
 }
 .apk-download-btn:hover {
     transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 12px 35px rgba(241,196,15,0.6);
+    box-shadow: 0 12px 35px rgba(241,196,15,0.7);
 }
-.apk-icon {
-    font-size: 20px;
+@keyframes apk-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
 }
+.apk-icon { font-size: 20px; }
 @media (max-width: 600px) {
     .apk-download-btn {
         bottom: 15px;
@@ -44,15 +48,10 @@
         padding: 10px 16px;
         font-size: 13px;
     }
-    .apk-text {
-        display: none;
-    }
-    .apk-icon {
-        font-size: 24px;
-    }
+    .apk-text { display: none; }
+    .apk-icon { font-size: 24px; }
 }
 </style>
-
 </head>
 <body>
 
@@ -151,12 +150,12 @@
 </div>
 
 <!-- Supabase SDK -->
-<script src="js/license-utils.js?v=20261011235511"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=20261011235511"></script>
+<script src="js/license-utils.js?v=20261012000532"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=20261012000532"></script>
 
 <!-- App -->
-<script src="js/config.js?v=20261011235511"></script>
-<script src="js/auth.js?v=20261011235511"></script>
+<script src="js/config.js?v=20261012000532"></script>
+<script src="js/auth.js?v=20261012000532"></script>
 
 <script>
     document.getElementById('version').textContent = APP_VERSION;
@@ -178,7 +177,6 @@
   }
 </script>
 
-
 <!-- 📱 دکمه دانلود اپلیکیشن -->
 <a href="downloads/PulsePortal.apk" 
    class="apk-download-btn" 
@@ -187,6 +185,5 @@
     <span class="apk-icon">📱</span>
     <span class="apk-text">نصب اپلیکیشن</span>
 </a>
-
 </body>
 </html>
