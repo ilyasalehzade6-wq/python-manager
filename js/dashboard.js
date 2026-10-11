@@ -939,12 +939,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// ═══════════════════════════════════════════════════════
-//  💬 چت تمام‌صفحه (نسخه‌ی Rubika)
-// ═══════════════════════════════════════════════════════
-let memberChatRooms = [];
-let currentMemberRoom = null;
-let memberChatTimer = null;
 
 
 // ─── باز کردن چت ───
