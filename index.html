@@ -8,48 +8,47 @@
     
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/style.css">
-<style>
-/* 📱 دکمه دانلود اپلیکیشن */
+
+<style id="apk-btn-style">
+/* 📱 دکمه دانلود اپلیکیشن — دائمی */
 .apk-download-btn {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: linear-gradient(135deg, #f1c40f, #e67e22);
-    color: #0f0f1a;
-    padding: 12px 22px;
-    border-radius: 30px;
-    font-size: 14px;
-    font-weight: 700;
-    text-decoration: none;
-    box-shadow: 0 8px 25px rgba(241,196,15,0.5);
-    z-index: 99998;
-    transition: all 0.3s ease;
-    font-family: inherit;
-    direction: rtl;
-    border: 2px solid rgba(241,196,15,0.8);
-    animation: apk-bounce 3s infinite;
+    position: fixed !important;
+    bottom: 20px !important;
+    left: 20px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: linear-gradient(135deg, #f1c40f, #e67e22) !important;
+    color: #0f0f1a !important;
+    padding: 12px 22px !important;
+    border-radius: 30px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    box-shadow: 0 8px 25px rgba(241,196,15,0.5) !important;
+    z-index: 2147483647 !important;
+    font-family: inherit !important;
+    direction: rtl !important;
+    border: 2px solid rgba(241,196,15,0.8) !important;
+    animation: apk-bounce 3s infinite !important;
 }
 .apk-download-btn:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 12px 35px rgba(241,196,15,0.7);
+    transform: translateY(-3px) scale(1.05) !important;
 }
 @keyframes apk-bounce {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-5px); }
 }
-.apk-icon { font-size: 20px; }
+.apk-icon { font-size: 20px !important; }
 @media (max-width: 600px) {
     .apk-download-btn {
-        bottom: 15px;
-        left: 15px;
-        padding: 10px 16px;
-        font-size: 13px;
+        bottom: 15px !important;
+        left: 15px !important;
+        padding: 10px 16px !important;
+        font-size: 13px !important;
     }
-    .apk-text { display: none; }
-    .apk-icon { font-size: 24px; }
+    .apk-text { display: none !important; }
+    .apk-icon { font-size: 24px !important; }
 }
 </style>
 </head>
@@ -150,12 +149,12 @@
 </div>
 
 <!-- Supabase SDK -->
-<script src="js/license-utils.js?v=20261012000532"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=20261012000532"></script>
+<script src="js/license-utils.js?v=20261012001006"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=20261012001006"></script>
 
 <!-- App -->
-<script src="js/config.js?v=20261012000532"></script>
-<script src="js/auth.js?v=20261012000532"></script>
+<script src="js/config.js?v=20261012001006"></script>
+<script src="js/auth.js?v=20261012001006"></script>
 
 <script>
     document.getElementById('version').textContent = APP_VERSION;
@@ -177,13 +176,66 @@
   }
 </script>
 
-<!-- 📱 دکمه دانلود اپلیکیشن -->
-<a href="downloads/PulsePortal.apk" 
-   class="apk-download-btn" 
-   download
-   title="دانلود اپلیکیشن موبایل">
-    <span class="apk-icon">📱</span>
-    <span class="apk-text">نصب اپلیکیشن</span>
-</a>
+<script id="apk-btn-script">
+// 📱 دکمه دانلود APK — تضمین می‌کنه همیشه هست
+(function() {
+    'use strict';
+
+    function createButton() {
+        const btn = document.createElement('a');
+        btn.href = 'downloads/PulsePortal.apk';
+        btn.setAttribute('download', '');
+        btn.className = 'apk-download-btn';
+        btn.title = 'دانلود اپلیکیشن موبایل';
+        btn.innerHTML = '<span class="apk-icon">📱</span><span class="apk-text">نصب اپلیکیشن</span>';
+        return btn;
+    }
+
+    function ensureButton() {
+        if (!document.body) return;
+        if (document.querySelector('.apk-download-btn')) return;
+
+        // اطمینان از اینکه CSS هست
+        if (!document.getElementById('apk-btn-style')) {
+            const style = document.createElement('style');
+            style.id = 'apk-btn-style';
+            style.textContent = document.getElementById('apk-btn-style-template')?.textContent || '';
+        }
+
+        document.body.appendChild(createButton());
+    }
+
+    // اجرا در چند مرحله
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ensureButton);
+    } else {
+        ensureButton();
+    }
+
+    // پیگیری دائمی — هر ۵۰۰ms چک کن
+    setInterval(ensureButton, 500);
+
+    // MutationObserver: اگه دکمه پاک شد، فوراً اضافه کن
+    if (typeof MutationObserver !== 'undefined') {
+        const observer = new MutationObserver(function(mutations) {
+            if (!document.querySelector('.apk-download-btn')) {
+                ensureButton();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (document.body) {
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true,
+                });
+            }
+        });
+    }
+
+    console.log('✅ APK button script loaded');
+})();
+</script>
+
 </body>
 </html>
