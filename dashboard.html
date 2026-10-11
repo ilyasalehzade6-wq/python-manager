@@ -31,6 +31,10 @@
                     🔔
                     <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
                 </button>
+                <button class="notif-bell chat-icon-btn" onclick="openFullChat()" title="پیام‌رسان">
+                    💬
+                    <span class="notif-badge" id="chatBadge" style="display:none;">0</span>
+                </button>
 
                 🌙
             </button>
@@ -129,53 +133,6 @@
 <!-- ═══════════════════════════════════════════════════ -->
 
 <!-- 🔔 بخش اعلان‌های من -->
-
-<!-- 💬 پیام‌رسان -->
-<section class="dashboard-section" id="chatSection">
-    <h2 class="section-title">
-        <span>💬</span> پیام‌رسان
-        <button class="mark-all-btn" onclick="loadMemberChatRooms()" style="float:left;">🔄 رفرش</button>
-    </h2>
-
-    <!-- حالت ۱: لیست اتاق‌ها -->
-    <div id="memberChatRoomList">
-        <div class="list-container" id="memberChatRoomsList">
-            <div class="loading">در حال بارگذاری...</div>
-        </div>
-    </div>
-
-    <!-- حالت ۲: گفت‌وگو -->
-    <div id="memberChatConversation" style="display: none;">
-        <div class="chat-conv-header">
-            <button class="chat-back-btn" onclick="backToMemberRoomList()">↩️ بازگشت</button>
-            <h3 id="memberChatConvTitle">—</h3>
-        </div>
-
-        <div id="memberChatMessagesList" class="chat-messages-list"></div>
-
-        <div class="chat-input-bar">
-            <textarea id="memberChatMessageInput" placeholder="پیام بنویس..." rows="1" maxlength="1000"></textarea>
-            <button id="memberChatSendBtn" onclick="sendMemberChatMessage()">📤</button>
-        </div>
-    </div>
-</section>
-
-<section class="dashboard-section" id="notificationsSection">
-    <h2 class="section-title">
-        <span>🔔</span> اعلان‌های من
-        <button class="mark-all-btn" onclick="markAllNotifsRead()" id="markAllBtn" style="display:none;">
-            ✅ خواندن همه
-        </button>
-    </h2>
-
-    <div class="list-container" id="notificationsList">
-        <div class="empty-state">
-            <div class="empty-icon">🔔</div>
-            <div class="empty-text">در حال بارگذاری...</div>
-        </div>
-    </div>
-</section>
-
 
 <!-- 📅 برنامه‌ی هفتگی کلاس من -->
 <section class="dashboard-section" id="classScheduleSection" style="display: none;">
@@ -299,6 +256,32 @@
 </footer>
 
 <!-- Supabase SDK -->
+
+<!-- 💬 چت تمام‌صفحه -->
+<div id="chatFullScreen" class="chat-fullscreen" style="display: none;">
+    <!-- هدر -->
+    <div class="chat-fs-header">
+        <button class="chat-fs-back" onclick="closeFullChat()">←</button>
+        <h2 id="chatFsTitle">پیام‌رسان</h2>
+        <button class="chat-fs-refresh" onclick="loadMemberChatRooms()">🔄</button>
+    </div>
+
+    <!-- حالت ۱: لیست اتاق‌ها -->
+    <div id="chatFsRoomList" class="chat-fs-rooms">
+        <div class="loading">در حال بارگذاری...</div>
+    </div>
+
+    <!-- حالت ۲: گفت‌وگو -->
+    <div id="chatFsConversation" class="chat-fs-conv" style="display: none;">
+        <div id="chatFsMessages" class="chat-fs-messages"></div>
+
+        <div class="chat-fs-input">
+            <textarea id="chatFsInput" placeholder="پیام بنویس..." rows="1" maxlength="1000"></textarea>
+            <button id="chatFsSend" onclick="sendMemberChatMessage()">📤</button>
+        </div>
+    </div>
+</div>
+
 <script src="js/license-utils.js?v=20261009012916"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=20261009012916"></script>
 
