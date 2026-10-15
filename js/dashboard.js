@@ -1148,6 +1148,13 @@ function renderMemberChatMessages(messages) {
     setTimeout(() => {
         if (list) list.scrollTop = list.scrollHeight;
     }, 100);
+
+    // 🎯 اتصال long-press به پیام‌های جدید
+    setTimeout(() => {
+        if (typeof attachLongPressHandlers === 'function') {
+            attachLongPressHandlers();
+        }
+    }, 200);
 }
 
 
@@ -1187,11 +1194,11 @@ async function sendMemberChatMessage() {
         const time = now.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
 
         const html = `
-            <div class="chat-msg member">
-                <span class="msg-sender">👤 من</span>
-                ${escapeHtml(content)}
-                <span class="msg-meta">${time}</span>
-            </div>
+            <div class="chat-msg member mine" data-message-id="${msgId}" data-mine="true">
+                    <span class="msg-sender">👤 من</span>
+                    <span class="msg-text">${escapeHtml(content)}</span>
+                    <span class="msg-meta">${time}</span>
+                </div>
         `;
         list.insertAdjacentHTML('beforeend', html);
         setTimeout(() => { list.scrollTop = list.scrollHeight; }, 30);
@@ -1219,6 +1226,352 @@ function stopMemberChatRefresh() {
         clearInterval(memberChatTimer);
         memberChatTimer = null;
     }
+}
+
+
+
+
+// ═══════════════════════════════════════════════════════
+//  ✏️ Long-Press → Edit/Delete Messages
+// ═══════════════════════════════════════════════════════
+
+// CSS
+(function() {
+    if (document.getElementById('msg-edit-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'msg-edit-styles';
+    style.textContent = `
+        .chat-msg.pressing {
+            transform: scale(0.96);
+            opacity: 0.8;
+            transition: all 0.15s;
+        }
+        .chat-msg.mine {
+            cursor: pointer;
+        }
+        .msg-action-sheet {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 999999;
+            animation: fadeIn 0.2s;
+        }
+        .msg-action-sheet .sheet {
+            background: #1a1a2e;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            animation: slideUp 0.3s;
+            direction: rtl;
+        }
+        .msg-action-sheet .sheet-title {
+            color: #95a5a6;
+            font-size: 12px;
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #2c3e50;
+        }
+        .msg-action-btn {
+            width: 100%;
+            padding: 16px;
+            background: transparent;
+            border: none;
+            color: #e8e8f0;
+            font-size: 16px;
+            text-align: right;
+            cursor: pointer;
+            border-radius: 12px;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.2s;
+        }
+        .msg-action-btn:hover, .msg-action-btn:active {
+            background: rgba(241,196,15,0.1);
+        }
+        .msg-action-btn.danger {
+            color: #e74c3c;
+        }
+        .msg-action-btn.cancel {
+            color: #95a5a6;
+            justify-content: center;
+            margin-top: 10px;
+            border-top: 1px solid #2c3e50;
+            border-radius: 0;
+        }
+        .msg-edit-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999999;
+            padding: 20px;
+            direction: rtl;
+        }
+        .msg-edit-modal .modal-content {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 25px;
+            max-width: 500px;
+            width: 100%;
+            color: #e8e8f0;
+        }
+        .msg-edit-modal textarea {
+            width: 100%;
+            min-height: 100px;
+            background: #0f0f1a;
+            color: #e8e8f0;
+            border: 1px solid #2c3e50;
+            border-radius: 10px;
+            padding: 12px;
+            font-family: inherit;
+            font-size: 15px;
+            resize: vertical;
+            margin: 15px 0;
+        }
+        .msg-edit-modal textarea:focus {
+            outline: none;
+            border-color: #f1c40f;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
+// ─── Long-press handler ───
+let _longPressTimer = null;
+let _longPressTarget = null;
+
+function attachLongPressHandlers() {
+    const messages = document.querySelectorAll('.chat-msg.member');
+
+    messages.forEach(msg => {
+        if (msg.dataset.longPressBound === 'true') return;
+        msg.dataset.longPressBound = 'true';
+
+        // فقط پیام‌های خودی
+        if (!msg.dataset.messageId) return;
+        if (msg.dataset.mine !== 'true') return;
+
+        const start = (e) => {
+            _longPressTarget = msg;
+            msg.classList.add('pressing');
+
+            _longPressTimer = setTimeout(() => {
+                if (_longPressTarget === msg) {
+                    // لرزش (اگه پشتیبانی بشه)
+                    if (navigator.vibrate) navigator.vibrate(50);
+                    showMessageActions(msg);
+                }
+                msg.classList.remove('pressing');
+            }, 500);
+        };
+
+        const cancel = () => {
+            if (_longPressTimer) {
+                clearTimeout(_longPressTimer);
+                _longPressTimer = null;
+            }
+            msg.classList.remove('pressing');
+            _longPressTarget = null;
+        };
+
+        // Touch events
+        msg.addEventListener('touchstart', start, { passive: true });
+        msg.addEventListener('touchend', cancel);
+        msg.addEventListener('touchmove', cancel);
+        msg.addEventListener('touchcancel', cancel);
+
+        // Mouse events (برای دسکتاپ)
+        msg.addEventListener('mousedown', start);
+        msg.addEventListener('mouseup', cancel);
+        msg.addEventListener('mouseleave', cancel);
+    });
+}
+
+// ─── نمایش منوی عملیات ───
+function showMessageActions(msgEl) {
+    // حذف قبلی
+    document.querySelectorAll('.msg-action-sheet').forEach(el => el.remove());
+
+    const messageId = msgEl.dataset.messageId;
+    const content = msgEl.querySelector('.msg-text')?.textContent || '';
+
+    const sheet = document.createElement('div');
+    sheet.className = 'msg-action-sheet';
+    sheet.innerHTML = `
+        <div class="sheet">
+            <div class="sheet-title">عملیات پیام</div>
+            <button class="msg-action-btn" onclick="editMessage('${messageId}', ${JSON.stringify(content).replace(/"/g, '&quot;')})">
+                <span>✏️</span><span>ویرایش پیام</span>
+            </button>
+            <button class="msg-action-btn" onclick="copyMessageText(${JSON.stringify(content).replace(/"/g, '&quot;')})">
+                <span>📋</span><span>کپی متن</span>
+            </button>
+            <button class="msg-action-btn danger" onclick="deleteMessage('${messageId}')">
+                <span>🗑</span><span>حذف پیام</span>
+            </button>
+            <button class="msg-action-btn cancel" onclick="this.closest('.msg-action-sheet').remove()">
+                انصراف
+            </button>
+        </div>
+    `;
+
+    sheet.addEventListener('click', (e) => {
+        if (e.target === sheet) sheet.remove();
+    });
+
+    document.body.appendChild(sheet);
+}
+
+// ─── ویرایش پیام ───
+function editMessage(messageId, currentContent) {
+    document.querySelectorAll('.msg-action-sheet').forEach(el => el.remove());
+    document.querySelectorAll('.msg-edit-modal').forEach(el => el.remove());
+
+    const modal = document.createElement('div');
+    modal.className = 'msg-edit-modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h3 style="color:#f1c40f; margin:0 0 10px 0;">✏️ ویرایش پیام</h3>
+            <textarea id="editMsgText"></textarea>
+            <div style="display:flex; gap:10px;">
+                <button onclick="saveEditedMessage('${messageId}')" style="flex:2; padding:12px; background:#f1c40f; color:#0f0f1a; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-family:inherit; font-size:15px;">
+                    ✅ ذخیره
+                </button>
+                <button onclick="this.closest('.msg-edit-modal').remove()" style="flex:1; padding:12px; background:transparent; color:#95a5a6; border:1px solid #2c3e50; border-radius:10px; cursor:pointer; font-family:inherit; font-size:15px;">
+                    انصراف
+                </button>
+            </div>
+            <div id="editErrBox" style="color:#e74c3c; margin-top:10px; font-size:13px; display:none;"></div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const ta = document.getElementById('editMsgText');
+    ta.value = currentContent;
+    ta.focus();
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+}
+
+// ─── ذخیره ویرایش ───
+async function saveEditedMessage(messageId) {
+    const ta = document.getElementById('editMsgText');
+    const errBox = document.getElementById('editErrBox');
+    const newContent = ta.value.trim();
+
+    if (!newContent) {
+        errBox.style.display = 'block';
+        errBox.textContent = '⚠️ پیام نمی‌تواند خالی باشد';
+        return;
+    }
+
+    errBox.style.display = 'none';
+    ta.disabled = true;
+
+    try {
+        const { data, error } = await supabaseClient.rpc('member_edit_chat_message', {
+            p_member_id: currentUser.id,
+            p_message_id: messageId,
+            p_new_content: newContent
+        });
+
+        if (error || !data?.success) {
+            errBox.style.display = 'block';
+            errBox.textContent = '❌ ' + (error?.message || data?.error || 'خطا');
+            ta.disabled = false;
+            return;
+        }
+
+        document.querySelector('.msg-edit-modal')?.remove();
+        showToast('✅ پیام ویرایش شد');
+
+        // Refresh
+        await loadMemberChatMessages();
+
+    } catch (e) {
+        errBox.style.display = 'block';
+        errBox.textContent = '❌ ' + e.message;
+        ta.disabled = false;
+    }
+}
+
+// ─── حذف پیام ───
+async function deleteMessage(messageId) {
+    document.querySelectorAll('.msg-action-sheet').forEach(el => el.remove());
+
+    if (!confirm('🗑 این پیام حذف شود؟')) return;
+
+    try {
+        const { data, error } = await supabaseClient.rpc('member_delete_chat_message', {
+            p_member_id: currentUser.id,
+            p_message_id: messageId
+        });
+
+        if (error || !data?.success) {
+            showToast('❌ ' + (error?.message || data?.error || 'خطا'), 'error');
+            return;
+        }
+
+        showToast('✅ پیام حذف شد');
+        await loadMemberChatMessages();
+
+    } catch (e) {
+        showToast('❌ ' + e.message, 'error');
+    }
+}
+
+// ─── کپی متن ───
+function copyMessageText(text) {
+    document.querySelectorAll('.msg-action-sheet').forEach(el => el.remove());
+
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('📋 متن کپی شد');
+        });
+    }
+}
+
+// ─── Toast helper ───
+function showToast(msg, type = 'success') {
+    const existing = document.querySelector('.msg-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'msg-toast';
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${type === 'error' ? '#e74c3c' : '#2ecc71'};
+        color: #000;
+        padding: 12px 24px;
+        border-radius: 10px;
+        font-weight: bold;
+        z-index: 9999999;
+        direction: rtl;
+        animation: fadeIn 0.2s;
+    `;
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
 }
 
 
