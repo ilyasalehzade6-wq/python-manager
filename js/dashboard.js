@@ -1121,6 +1121,10 @@ function renderMemberChatMessages(messages) {
     const list = document.getElementById('chatFsMessages');
     if (!list) return;
 
+    // 🎯 چک کن کاربر قبلاً کجا بود (قبل از رندر مجدد)
+    const wasAtBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 150;
+    const oldScrollTop = list.scrollTop;
+
     if (!messages || messages.length === 0) {
         list.innerHTML = `
             <div style="text-align:center; padding:40px 20px; color:#7f8c8d;">
@@ -1135,26 +1139,73 @@ function renderMemberChatMessages(messages) {
     list.innerHTML = messages.map(m => {
         const isMember = m.sender_type === 'member';
         const sender = isMember ? '👤 من' : '👨‍💼 مدیر';
+
+        // 🎯 ساخت data-mine (فقط پیام‌های خودی قابلیت ویرایش/حذف دارن)
+        const mineAttr = isMember ? 'data-mine="true"' : 'data-mine="false"';
+        const mineClass = isMember ? 'mine' : '';
+
+        // 🔧 فیکس ساعت: از created_at استفاده کن اگه time نبود
+        let displayTime = m.time || '';
+        if (!displayTime && m.created_at) {
+            try {
+                const d = new Date(m.created_at);
+                displayTime = d.toLocaleTimeString('fa-IR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+            } catch (e) {
+                displayTime = '';
+            }
+        }
+        // اگه time هست، فقط HH:MM رو بگیر (اگه timestamp کامله)
+        if (displayTime && displayTime.includes('T')) {
+            try {
+                const d = new Date(displayTime);
+                displayTime = d.toLocaleTimeString('fa-IR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+            } catch (e) {}
+        }
+
+        // 🆕 اگه پیام ویرایش یا حذف شده
+        const isDeleted = m.is_deleted === true;
+        const isEdited = m.edited_at && !isDeleted;
+
+        const contentClass = isDeleted ? 'msg-text msg-deleted' : 'msg-text';
+        const editedMark = isEdited ? ' <span class="msg-edited">✏️ ویرایش شده</span>' : '';
+        const deletedMark = isDeleted ? ' <span class="msg-deleted-mark">🗑 حذف شده</span>' : '';
+
         return `
-            <div class="chat-msg ${isMember ? 'member' : 'admin'}">
+            <div class="chat-msg ${isMember ? 'member' : 'admin'} ${mineClass}"
+                 data-message-id="${m.id}"
+                 ${mineAttr}>
                 <span class="msg-sender">${sender}</span>
-                ${escapeHtml(m.content)}
-                <span class="msg-meta">${m.time || ''}</span>
+                <span class="${contentClass}">${escapeHtml(m.content || '')}</span>${editedMark}${deletedMark}
+                <span class="msg-meta">${displayTime}</span>
             </div>
         `;
     }).join('');
 
-    // اسکرول به پایین
+    // 🎯 اسکرول هوشمند:
+    // اگه کاربر پایین بود → برو پایین (پیام جدید)
+    // اگه کاربر بالا بود → همون‌جا بمون (کاربر داره تاریخچه می‌خونه)
     setTimeout(() => {
-        if (list) list.scrollTop = list.scrollHeight;
-    }, 100);
+        if (wasAtBottom) {
+            list.scrollTop = list.scrollHeight;
+        } else {
+            list.scrollTop = oldScrollTop;
+        }
+    }, 50);
 
     // 🎯 اتصال long-press به پیام‌های جدید
     setTimeout(() => {
         if (typeof attachLongPressHandlers === 'function') {
             attachLongPressHandlers();
         }
-    }, 200);
+    }, 100);
 }
 
 
@@ -1241,6 +1292,30 @@ function stopMemberChatRefresh() {
     const style = document.createElement('style');
     style.id = 'msg-edit-styles';
     style.textContent = `
+
+        .msg-edited {
+            font-size: 10px;
+            color: #95a5a6;
+            margin-right: 4px;
+        }
+        .msg-deleted-mark {
+            font-size: 10px;
+            color: #e74c3c;
+            margin-right: 4px;
+        }
+        .msg-text.msg-deleted {
+            opacity: 0.5;
+            font-style: italic;
+        }
+        .chat-msg.mine {
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+        .chat-msg.mine .msg-text {
+            user-select: text;
+        }
         .chat-msg.pressing {
             transform: scale(0.96);
             opacity: 0.8;
