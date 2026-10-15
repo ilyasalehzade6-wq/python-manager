@@ -921,6 +921,24 @@ function contactSupport() {
 
 
 // ═══════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════
+//  🛠️ Helpers: isMobile + APK button visibility
+// ═══════════════════════════════════════════════════════
+function isMobileDevice() {
+    return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
+
+function hideApkButton() {
+    const btn = document.querySelector('.apk-download-btn');
+    if (btn) btn.style.display = 'none';
+}
+
+function showApkButton() {
+    const btn = document.querySelector('.apk-download-btn');
+    if (btn) btn.style.display = '';
+}
+
 let memberChatRooms = [];
 let currentMemberRoom = null;
 let memberChatTimer = null;
@@ -931,7 +949,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const inp = document.getElementById('memberChatMessageInput');
     if (inp) {
         inp.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key !== 'Enter') return;
+            // 📱 در موبایل: Enter = خط جدید
+            if (isMobileDevice()) return;
+            if (!e.shiftKey) {
                 e.preventDefault();
                 sendMemberChatMessage();
             }
@@ -949,6 +970,10 @@ function openFullChat() {
 
     fs.style.display = 'flex';
     document.body.style.overflow = 'hidden';  // 🔒 قفل اسکرول
+
+    // 🔧 مخفی کردن دکمه APK که روی ارسال پیام می‌افته
+    hideApkButton();
+
     loadMemberChatRooms();
 }
 
@@ -1202,7 +1227,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const inp = document.getElementById('chatFsInput');
     if (inp) {
         inp.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key !== 'Enter') return;
+            // 📱 در موبایل: Enter = خط جدید
+            // 💻 در دسکتاپ: Enter = ارسال، Shift+Enter = خط جدید
+            if (isMobileDevice()) {
+                return;  // پیش‌فرض: خط جدید
+            }
+            if (!e.shiftKey) {
                 e.preventDefault();
                 sendMemberChatMessage();
             }
