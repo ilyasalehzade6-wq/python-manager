@@ -1,0 +1,2450 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="پالس مدیریت — سیستم هوشمند مدیریت آموزشی و ورزشی برای باشگاه‌ها، آموزشگاه‌ها و مدارس">
+<meta name="theme-color" content="#0A0A0F">
+<title>پالس مدیریت — سیستم هوشمند مدیریت آموزشی و ورزشی</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;300;400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   RESET & VARIABLES
+   ============================================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+:root, [data-theme="dark"] {
+    --bg: #0A0A0F;
+    --bg-2: #0F0F18;
+    --card: #15151E;
+    --card-2: #1C1C28;
+    --card-3: #252535;
+    --gold: #F1C40F;
+    --gold-2: #D4AC0D;
+    --green: #2ECC71;
+    --red: #E74C3C;
+    --blue: #3498DB;
+    --purple: #9B59B6;
+    --cyan: #1ABC9C;
+    --text: #FFFFFF;
+    --text-2: #D0D0DD;
+    --text-dim: #808090;
+    --border: rgba(241, 196, 15, 0.15);
+    --border-2: rgba(255, 255, 255, 0.06);
+    --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+    --overlay: rgba(10, 10, 15, 0.85);
+}
+
+[data-theme="light"] {
+    --bg: #F5F5FA;
+    --bg-2: #EBEBF3;
+    --card: #FFFFFF;
+    --card-2: #F8F8FC;
+    --card-3: #EFEFF6;
+    --gold: #D4AC0D;
+    --gold-2: #B8930D;
+    --green: #27AE60;
+    --red: #E74C3C;
+    --blue: #2980B9;
+    --purple: #8E44AD;
+    --cyan: #16A085;
+    --text: #1A1A2E;
+    --text-2: #404055;
+    --text-dim: #707085;
+    --border: rgba(212, 172, 13, 0.25);
+    --border-2: rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.08);
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.06);
+    --overlay: rgba(255, 255, 255, 0.85);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+    transition: background 0.4s ease, color 0.4s ease;
+    direction: rtl;
+}
+
+/* ============================================================
+   BACKGROUND DECORATION
+   ============================================================ */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(circle at 15% 5%, rgba(241,196,15,0.1) 0%, transparent 35%),
+        radial-gradient(circle at 85% 95%, rgba(52,152,219,0.08) 0%, transparent 35%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* ============================================================
+   NAVBAR
+   ============================================================ */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: var(--overlay);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-2);
+    padding: 14px 0;
+    transition: all 0.3s;
+}
+
+.navbar.scrolled {
+    padding: 10px 0;
+    box-shadow: var(--shadow-sm);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 19px;
+    font-weight: 800;
+    color: var(--gold);
+    text-decoration: none;
+}
+
+.logo-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-2) 100%);
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 4px 14px rgba(241,196,15,0.3);
+}
+
+.nav-links {
+    display: flex;
+    gap: 8px;
+    list-style: none;
+}
+
+.nav-links a {
+    color: var(--text-2);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.nav-links a:hover {
+    color: var(--gold);
+    background: var(--card-2);
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.theme-btn {
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--border-2);
+    background: var(--card);
+    color: var(--gold);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 17px;
+    transition: all 0.3s;
+}
+
+.theme-btn:hover {
+    transform: scale(1.1) rotate(15deg);
+    border-color: var(--gold);
+}
+
+.menu-toggle {
+    display: none;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--border-2);
+    background: var(--card);
+    color: var(--text);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+/* ============================================================
+   CONTAINER & BUTTONS
+   ============================================================ */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border: none;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-2) 100%);
+    color: #000;
+    box-shadow: 0 8px 24px rgba(241,196,15,0.3);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 12px 32px rgba(241,196,15,0.45);
+    transform: translateY(-2px);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--border-2);
+}
+
+.btn-outline:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.btn-large {
+    padding: 18px 36px;
+    font-size: 16px;
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero {
+    padding: 140px 0 80px;
+    text-align: center;
+    position: relative;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(241,196,15,0.1);
+    border: 1px solid rgba(241,196,15,0.3);
+    color: var(--gold);
+    padding: 8px 18px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    animation: fadeInUp 0.6s ease;
+}
+
+.hero-badge::before {
+    content: '✨';
+    font-size: 15px;
+}
+
+.hero h1 {
+    font-size: clamp(32px, 5.5vw, 62px);
+    font-weight: 900;
+    line-height: 1.25;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, var(--gold) 0%, #FFD700 50%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeInUp 0.7s ease;
+}
+
+.hero p {
+    font-size: clamp(15px, 2vw, 19px);
+    color: var(--text-2);
+    max-width: 700px;
+    margin: 0 auto 40px;
+    line-height: 1.9;
+    animation: fadeInUp 0.8s ease;
+}
+
+.hero-cta {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeInUp 0.9s ease;
+}
+
+.hero-stats {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    margin-top: 70px;
+    flex-wrap: wrap;
+    animation: fadeInUp 1s ease;
+}
+
+.stat-item { text-align: center; }
+
+.stat-value {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 500;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   SECTIONS
+   ============================================================ */
+section {
+    padding: 80px 0;
+    position: relative;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-tag {
+    display: inline-block;
+    color: var(--gold);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.section-title {
+    font-size: clamp(26px, 4vw, 40px);
+    font-weight: 800;
+    margin-bottom: 14px;
+    line-height: 1.3;
+}
+
+.section-subtitle {
+    font-size: 15px;
+    color: var(--text-dim);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ============================================================
+   MARKETS (برای چه کسانی)
+   ============================================================ */
+.markets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 20px;
+}
+
+.market-card {
+    background: var(--card);
+    border: 1px solid var(--border-2);
+    border-radius: 20px;
+    padding: 32px 22px;
+    text-align: center;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.market-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(241,196,15,0.08) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.market-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--border);
+    box-shadow: var(--shadow-lg);
+}
+
+.market-card:hover::before { opacity: 1; }
+
+.market-icon {
+    font-size: 46px;
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.market-card h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    position: relative;
+}
+
+.market-card p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.8;
+    position: relative;
+}
+
+/* ============================================================
+   FEATURES
+   ============================================================ */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.feature-card {
+    background: var(--card);
+    border: 1px solid var(--border-2);
+    border-radius: 18px;
+    padding: 26px 24px;
+    transition: all 0.3s;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(241,196,15,0.15) 0%, rgba(241,196,15,0.05) 100%);
+    border: 1px solid var(--border);
+}
+
+.feature-content h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.feature-content p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.75;
+}
+
+/* ============================================================
+   WHY US
+   ============================================================ */
+.why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.why-card {
+    background: var(--card);
+    border: 1px solid var(--border-2);
+    border-radius: 18px;
+    padding: 26px;
+    position: relative;
+    overflow: hidden;
+}
+
+.why-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle, rgba(241,196,15,0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+}
+
+.why-num {
+    font-size: 32px;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 12px;
+    position: relative;
+}
+
+.why-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    position: relative;
+}
+
+.why-card p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.8;
+    position: relative;
+}
+
+/* ============================================================
+   SCREENSHOTS (CSS Mockups)
+   ============================================================ */
+.screenshots-showcase {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.mockup {
+    background: var(--card);
+    border: 1px solid var(--border-2);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s;
+}
+
+.mockup:hover {
+    transform: translateY(-6px);
+    border-color: var(--border);
+}
+
+.mockup-header {
+    padding: 12px 16px;
+    background: var(--card-2);
+    border-bottom: 1px solid var(--border-2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mockup-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.mockup-dot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+}
+
+.mockup-dot:nth-child(1) { background: #E74C3C; }
+.mockup-dot:nth-child(2) { background: #F1C40F; }
+.mockup-dot:nth-child(3) { background: #2ECC71; }
+
+.mockup-title {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'Consolas', monospace;
+}
+
+.mockup-body {
+    padding: 20px;
+    min-height: 200px;
+}
+
+/* Mockup: Dashboard */
+.mock-dashboard {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.mock-stat {
+    background: var(--card-2);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+}
+
+.mock-stat-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--gold);
+    font-family: 'Consolas', monospace;
+}
+
+.mock-stat-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 3px;
+}
+
+.mock-bar {
+    height: 6px;
+    background: var(--card-3);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.mock-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green) 0%, var(--cyan) 100%);
+    border-radius: 3px;
+}
+
+/* Mockup: List */
+.mock-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mock-row {
+    background: var(--card-2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+}
+
+.mock-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-2) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #000;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.mock-row-text {
+    flex: 1;
+    color: var(--text-2);
+}
+
+.mock-row-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+}
+
+.mock-badge-green {
+    background: rgba(46, 204, 113, 0.15);
+    color: var(--green);
+}
+
+.mock-badge-gold {
+    background: rgba(241, 196, 15, 0.15);
+    color: var(--gold);
+}
+
+/* Mockup: Finance */
+.mock-finance {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mock-amount {
+    background: linear-gradient(135deg, rgba(46,204,113,0.15) 0%, rgba(46,204,113,0.05) 100%);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+}
+
+.mock-amount-label {
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.mock-amount-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--green);
+    font-family: 'Consolas', monospace;
+    margin-top: 4px;
+}
+
+/* ============================================================
+   PRICING
+   ============================================================ */
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.price-card {
+    background: var(--card);
+    border: 2px solid var(--border-2);
+    border-radius: 20px;
+    padding: 28px 20px;
+    text-align: center;
+    transition: all 0.3s;
+    position: relative;
+    cursor: pointer;
+}
+
+.price-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.price-card.featured {
+    border-color: var(--gold);
+    background: linear-gradient(180deg, rgba(241,196,15,0.08) 0%, var(--card) 30%);
+    transform: scale(1.02);
+}
+
+.price-card.featured::before {
+    content: '⭐ پیشنهاد ویژه';
+    position: absolute;
+    top: -14px;
+    right: 50%;
+    transform: translateX(50%);
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-2) 100%);
+    color: #000;
+    padding: 6px 18px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.price-name {
+    font-size: 17px;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.price-discount {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--green);
+    background: rgba(46,204,113,0.1);
+    padding: 3px 12px;
+    border-radius: 100px;
+    margin-bottom: 14px;
+}
+
+.price-amount {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--gold);
+    font-family: 'Consolas', monospace;
+    margin-bottom: 4px;
+}
+
+.price-unit {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+}
+
+.price-monthly {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border-2);
+}
+
+/* ============================================================
+   REGISTRATION FORM
+   ============================================================ */
+.register-section {
+    background: linear-gradient(135deg, rgba(241,196,15,0.06) 0%, transparent 60%);
+    border-top: 1px solid var(--border-2);
+    border-bottom: 1px solid var(--border-2);
+}
+
+.register-card {
+    max-width: 560px;
+    margin: 0 auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 40px 32px;
+    box-shadow: var(--shadow-lg);
+}
+
+.register-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.register-header h3 {
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: var(--gold);
+}
+
+.register-header p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.8;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin-bottom: 8px;
+}
+
+.form-label .required {
+    color: var(--red);
+    margin-right: 4px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--card-2);
+    border: 1.5px solid var(--border-2);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    transition: all 0.3s;
+    direction: rtl;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--gold);
+    background: var(--card);
+    box-shadow: 0 0 0 3px rgba(241,196,15,0.1);
+}
+
+.form-input::placeholder {
+    color: var(--text-dim);
+    opacity: 0.7;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.form-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.form-submit {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.form-note {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 16px;
+    line-height: 1.8;
+}
+
+.form-note .highlight {
+    color: var(--green);
+    font-weight: 700;
+}
+
+/* Success state */
+.form-success {
+    display: none;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.form-success.show {
+    display: block;
+    animation: fadeInUp 0.5s ease;
+}
+
+.form-success-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--green) 0%, #27AE60 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 20px;
+    box-shadow: 0 12px 32px rgba(46,204,113,0.4);
+}
+
+.form-success h3 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--green);
+    margin-bottom: 10px;
+}
+
+.form-success p {
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.9;
+    margin-bottom: 20px;
+}
+
+/* ============================================================
+   FAQ
+   ============================================================ */
+.faq-list {
+    max-width: 780px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.faq-item {
+    background: var(--card);
+    border: 1px solid var(--border-2);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.faq-item:hover {
+    border-color: var(--border);
+}
+
+.faq-item.open {
+    border-color: var(--gold);
+}
+
+.faq-question {
+    padding: 20px 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    font-weight: 600;
+    font-size: 14.5px;
+    user-select: none;
+}
+
+.faq-question::after {
+    content: '+';
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--gold);
+    transition: transform 0.3s;
+    flex-shrink: 0;
+}
+
+.faq-item.open .faq-question::after {
+    transform: rotate(45deg);
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.4s ease;
+    padding: 0 24px;
+    color: var(--text-dim);
+    font-size: 13.5px;
+    line-height: 1.9;
+}
+
+.faq-item.open .faq-answer {
+    max-height: 400px;
+    padding: 0 24px 22px;
+}
+
+/* ============================================================
+   STORY
+   ============================================================ */
+.story-section {
+    background: var(--bg-2);
+    border-top: 1px solid var(--border-2);
+    border-bottom: 1px solid var(--border-2);
+}
+
+.story-card {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--card);
+    border: 1px solid var(--border-2);
+    border-radius: 24px;
+    padding: 48px 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.story-card::before {
+    content: '"';
+    position: absolute;
+    top: -40px;
+    right: 30px;
+    font-size: 200px;
+    color: var(--border);
+    font-family: Georgia, serif;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.story-content {
+    position: relative;
+    z-index: 1;
+}
+
+.story-content p {
+    font-size: 15px;
+    line-height: 2.1;
+    color: var(--text-2);
+    margin-bottom: 18px;
+}
+
+.story-content p:last-child {
+    margin-bottom: 0;
+}
+
+.story-signature {
+    margin-top: 30px;
+    padding-top: 24px;
+    border-top: 1px dashed var(--border-2);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.story-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-2) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 8px 20px rgba(241,196,15,0.3);
+    flex-shrink: 0;
+}
+
+.story-signature-info {
+    flex: 1;
+}
+
+.story-signature-name {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--gold);
+}
+
+.story-signature-title {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+
+/* ============================================================
+   FINAL CTA
+   ============================================================ */
+.final-cta {
+    text-align: center;
+    padding: 100px 0;
+}
+
+.final-cta h2 {
+    font-size: clamp(26px, 4vw, 40px);
+    font-weight: 900;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--gold) 0%, #FFD700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.final-cta p {
+    font-size: 16px;
+    color: var(--text-2);
+    margin-bottom: 32px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.final-cta .btn-group {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer {
+    background: var(--bg-2);
+    border-top: 1px solid var(--border-2);
+    padding: 50px 0 30px;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.footer-brand h4 {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--gold);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-brand p {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.9;
+}
+
+.footer h5 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: var(--text);
+}
+
+.footer-links {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.footer-links a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.footer-links a:hover {
+    color: var(--gold);
+}
+
+.footer-developer {
+    text-align: center;
+    padding: 24px 0 0;
+    border-top: 1px solid var(--border-2);
+    margin-top: 20px;
+}
+
+.footer-developer-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-2);
+    line-height: 2;
+}
+
+.footer-developer-text .name {
+    color: var(--gold);
+    font-weight: 800;
+}
+
+.footer-developer-text .age {
+    color: var(--text-dim);
+    font-weight: 500;
+}
+
+.footer-developer-text .for-iran {
+    display: block;
+    margin-top: 8px;
+    font-size: 15px;
+    background: linear-gradient(135deg, var(--green) 0%, var(--gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+}
+
+.footer-copy {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 20px;
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120px);
+    background: linear-gradient(135deg, var(--green) 0%, #27AE60 100%);
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 12px 32px rgba(46,204,113,0.4);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 90vw;
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+.toast.error {
+    background: linear-gradient(135deg, var(--red) 0%, #C0392B 100%);
+    box-shadow: 0 12px 32px rgba(231,76,60,0.4);
+}
+
+/* ============================================================
+   MOBILE MENU
+   ============================================================ */
+@media (max-width: 768px) {
+    .nav-links {
+        position: fixed;
+        top: 66px;
+        right: -100%;
+        width: 260px;
+        height: calc(100vh - 66px);
+        background: var(--card);
+        flex-direction: column;
+        padding: 20px;
+        gap: 6px;
+        border-left: 1px solid var(--border-2);
+        transition: right 0.3s ease;
+        overflow-y: auto;
+    }
+
+    .nav-links.open { right: 0; }
+
+    .nav-links a {
+        padding: 14px 16px;
+        width: 100%;
+        text-align: right;
+    }
+
+    .menu-toggle { display: flex; align-items: center; justify-content: center; }
+
+    .hero { padding: 100px 0 60px; }
+
+    .hero-stats { gap: 24px; }
+
+    .form-row { grid-template-columns: 1fr; }
+
+    .story-card { padding: 32px 22px; }
+
+    .story-card::before { font-size: 120px; top: -20px; right: 10px; }
+
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .register-card { padding: 28px 20px; }
+
+    .screenshots-showcase {
+        grid-template-columns: 1fr;
+    }
+
+    .btn-large {
+        padding: 16px 24px;
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container { padding: 0 16px; }
+
+    .hero-cta { flex-direction: column; }
+    .hero-cta .btn { width: 100%; }
+
+    .final-cta .btn-group { flex-direction: column; }
+    .final-cta .btn-group .btn { width: 100%; }
+
+    .story-signature {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .footer-developer-text { font-size: 13px; }
+    .footer-developer-text .for-iran { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVBAR
+     ============================================================ -->
+<nav class="navbar" id="navbar">
+    <div class="nav-container">
+        <a href="#" class="logo">
+            <div class="logo-icon">💎</div>
+            <span>پالس مدیریت</span>
+        </a>
+
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#markets">برای چه کسانی</a></li>
+            <li><a href="#features">ویژگی‌ها</a></li>
+            <li><a href="#why">چرا پالس</a></li>
+            <li><a href="#pricing">پلن‌ها</a></li>
+            <li><a href="#faq">سوالات</a></li>
+            <li><a href="#story">داستان ما</a></li>
+        </ul>
+
+        <div class="nav-actions">
+            <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="تغییر تم">
+                🌙
+            </button>
+            <a href="#register" class="btn btn-primary" style="padding: 10px 20px; font-size: 13px;">
+                شروع رایگان
+            </a>
+            <button class="menu-toggle" onclick="toggleMenu()" id="menuBtn">
+                ☰
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- ============================================================
+     HERO
+     ============================================================ -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-badge">
+            ۳۰ روز رایگان + ۷ روز ضمانت بازگشت وجه
+        </div>
+
+        <h1>
+            سیستم هوشمند مدیریت<br>آموزشی و ورزشی
+        </h1>
+
+        <p>
+            دیگه نگران فراموشی اقساط نباش. دیگه دفتر و اکسل لازم نداری. 
+            با پالس، تمام اطلاعات مجموعه‌ات در یک نرم‌افزار ساده و امن مدیریت می‌شه — 
+            بدون نیاز به کارمند متخصص، بدون دردسر.
+        </p>
+
+        <div class="hero-cta">
+            <a href="#register" class="btn btn-primary btn-large">
+                🚀 شروع رایگان ۳۰ روزه
+            </a>
+            <a href="#features" class="btn btn-outline btn-large">
+                ✨ مشاهده‌ی ویژگی‌ها
+            </a>
+        </div>
+
+        <div class="hero-stats">
+            <div class="stat-item">
+                <div class="stat-value">۲۵+</div>
+                <div class="stat-label">سرویس یکپارچه</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">۲۰+</div>
+                <div class="stat-label">صفحه‌ی حرفه‌ای</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">۱۰۰٪</div>
+                <div class="stat-label">فارسی و آفلاین</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">۳۰</div>
+                <div class="stat-label">روز رایگان</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     MARKETS
+     ============================================================ -->
+<section id="markets">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">🎯 برای چه کسانی</div>
+            <h2 class="section-title">مناسب برای هر مجموعه‌ی آموزشی و ورزشی</h2>
+            <p class="section-subtitle">
+                اگه روزانه با اطلاعات اعضا سر و کار داری — ثبت‌نام، پرداخت، حضور و غیاب — 
+                پالس برای شماست.
+            </p>
+        </div>
+
+        <div class="markets-grid">
+            <div class="market-card">
+                <div class="market-icon">🏋️</div>
+                <h3>باشگاه‌های ورزشی</h3>
+                <p>مدیریت اعضا، اقساط، حضور و غیاب، کلاس‌ها و رزرو</p>
+            </div>
+
+            <div class="market-card">
+                <div class="market-icon">🎓</div>
+                <h3>آموزشگاه‌های علمی</h3>
+                <p>ثبت‌نام، شهریه، حضور و غیاب و کارنامه‌ی هنرجو</p>
+            </div>
+
+            <div class="market-card">
+                <div class="market-icon">🏫</div>
+                <h3>مدارس و مراکز آموزشی</h3>
+                <p>مدیریت دانش‌آموزان، والدین، هزینه‌ها و گزارش‌ها</p>
+            </div>
+
+            <div class="market-card">
+                <div class="market-icon">🎨</div>
+                <h3>آموزشگاه‌های هنری</h3>
+                <p>کلاس‌های موسیقی، نقاشی، عکاسی و سایر هنرها</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     PROBLEMS SOLVED
+     ============================================================ -->
+<section id="problems" style="background: var(--bg-2); border-top: 1px solid var(--border-2); border-bottom: 1px solid var(--border-2);">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">💡 قبل و بعد</div>
+            <h2 class="section-title">زندگی‌ت قبل و بعد از پالس</h2>
+            <p class="section-subtitle">
+                اینا مشکلاتیه که هر روز مدیریت‌کننده‌های مجموعه‌ها باهاش دست و پنجه نرم می‌کنن.
+            </p>
+        </div>
+
+        <div class="why-grid">
+            <div class="why-card" style="border-color: rgba(231,76,60,0.3);">
+                <div class="why-num" style="color: var(--red);">😩 قبل</div>
+                <h3>۳ ساعت در روز دنبال اطلاعات</h3>
+                <p>دفتر، اکسل، کاغذهای پراکنده — وقتت هدر می‌ره فقط برای پیدا کردن یه شماره یا تاریخ پرداخت.</p>
+            </div>
+
+            <div class="why-card" style="border-color: rgba(46,204,113,0.3);">
+                <div class="why-num" style="color: var(--green);">😎 بعد</div>
+                <h3>همه‌چیز در چند کلیک</h3>
+                <p>با پالس، اطلاعات هر عضو در چند ثانیه پیدا می‌شه. وقتت رو بذار برای رشد کسب‌وکارت.</p>
+            </div>
+
+            <div class="why-card" style="border-color: rgba(231,76,60,0.3);">
+                <div class="why-num" style="color: var(--red);">😩 قبل</div>
+                <h3>فراموشی اقساط و بدهی‌ها</h3>
+                <p>مشتری یادش می‌ره پرداخت کنه، تو یادت می‌ره پیگیری کنی. پولت می‌مونه پیش مشتری.</p>
+            </div>
+
+            <div class="why-card" style="border-color: rgba(46,204,113,0.3);">
+                <div class="why-num" style="color: var(--green);">😎 بعد</div>
+                <h3>یادآوری خودکار اقساط</h3>
+                <p>پیامک خودکار به مشتری یادآوری می‌کنه. تو فقط گزارش‌های پرداخت‌شده رو ببین.</p>
+            </div>
+
+            <div class="why-card" style="border-color: rgba(231,76,60,0.3);">
+                <div class="why-num" style="color: var(--red);">😩 قبل</div>
+                <h3>حضور و غیاب با کاغذ</h3>
+                <p>لیست کاغذی، امضای مشتری، بعد باید همه رو دستی وارد اکسل کنی. کلی وقت تلف می‌شه.</p>
+            </div>
+
+            <div class="why-card" style="border-color: rgba(46,204,113,0.3);">
+                <div class="why-num" style="color: var(--green);">😎 بعد</div>
+                <h3>حضور و غیاب دیجیتال</h3>
+                <p>یه کلیک، تمام. گزارش ماهانه هر عضو آماده‌ست. حتی می‌تونی به مشتری هم نشون بدی.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     FEATURES
+     ============================================================ -->
+<section id="features">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">✨ ویژگی‌ها</div>
+            <h2 class="section-title">هر چیزی که برای مدیریت نیاز داری</h2>
+            <p class="section-subtitle">
+                دیگه لازم نیست برای هر کاری از یه برنامه‌ی جداگانه استفاده کنی.
+            </p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <div class="feature-content">
+                    <h3>دیگه هیچ عضوی فراموش نمی‌شه</h3>
+                    <p>اطلاعات کامل هر عضو، عکس، مدارک و تاریخچه — در چند ثانیه پیدا کن</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">💳</div>
+                <div class="feature-content">
+                    <h3>پول‌ت رو از دست نمی‌دی</h3>
+                    <p>یادآوری خودکار اقساط + پیامک به مشتری — دیگه کسی بدهی‌اش رو فراموش نمی‌کنه</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">✅</div>
+                <div class="feature-content">
+                    <h3>حضور و غیاب در چند کلیک</h3>
+                    <p>بدون کاغذ، بدون دفتر — گزارش ماهانه‌ی هر عضو آماده‌ست</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📨</div>
+                <div class="feature-content">
+                    <h3>مشتری‌هات همیشه یادت هستن</h3>
+                    <p>پیامک خودکار برای تولد، اقساط و اطلاع‌رسانی — بدون اینکه خودت یادت باشه</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <div class="feature-content">
+                    <h3>حساب و کتاب همیشه روشنه</h3>
+                    <p>گزارش PDF و Excel با نمودار — برای مدیریت، برای مالیات، برای هر چیزی</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🪪</div>
+                <div class="feature-content">
+                    <h3>کارت عضویت حرفه‌ای</h3>
+                    <p>کارت چاپی با QR Code — به مشتری حس حرفه‌ای بودن بده</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🛒</div>
+                <div class="feature-content">
+                    <h3>فروشگاهت رو هم مدیریت کن</h3>
+                    <p>محصولات، فروش و حساب‌ها — همه‌چیز در یک جا، بدون دفتر جداگانه</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">💰</div>
+                <div class="feature-content">
+                    <h3>حقوق کارکنان بدون دردسر</h3>
+                    <p>محاسبه و ثبت حقوق با گزارش — دیگه نیازی به حسابدار نیست</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <div class="feature-content">
+                    <h3>اطلاعاتت جای امنی هست</h3>
+                    <p>رمزنگاری حرفه‌ای، فقط خودت به اطلاعات دسترسی داری — نه هیچ‌کس دیگه</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">💾</div>
+                <div class="feature-content">
+                    <h3>اطلاعاتت هیچ‌وقت از دست نمی‌ره</h3>
+                    <p>پشتیبان‌گیری خودکار روزانه — اگه سیستم خراب شه، همه‌چیز برمی‌گرده</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📅</div>
+                <div class="feature-content">
+                    <h3>کاملاً ایرانی، کاملاً فارسی</h3>
+                    <p>تقویم شمسی، اعداد فارسی، همه‌چیز دقیقاً همون‌طور که تو می‌خوای</p>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <div class="feature-content">
+                    <h3>حتی بدون اینترنت هم کار می‌کنه</h3>
+                    <p>اینترنت قطع شد؟ مشکلی نیست. برنامه کاملاً آفلاین کار می‌کنه</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     WHY US
+     ============================================================ -->
+<section id="why">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">💎 چرا پالس</div>
+            <h2 class="section-title">چرا پالس مدیریت انتخاب بهتری است</h2>
+            <p class="section-subtitle">
+                ما با درک عمیق از نیازهای بازار ایران، این نرم‌افزار را ساختیم.
+            </p>
+        </div>
+
+        <div class="why-grid">
+            <div class="why-card">
+                <div class="why-num">۰۱</div>
+                <h3>۱۰۰٪ آفلاین</h3>
+                <p>بدون نیاز به اینترنت کار می‌کند. داده‌های شما فقط روی سیستم خودتان ذخیره می‌شود.</p>
+            </div>
+
+            <div class="why-card">
+                <div class="why-num">۰۲</div>
+                <h3>فارسی کامل</h3>
+                <p>تقویم شمسی، رابط کاربری راست‌چین و طراحی شده برای کاربر ایرانی.</p>
+            </div>
+
+            <div class="why-card">
+                <div class="why-num">۰۳</div>
+                <h3>کمتر از هزینه‌ی یه کارمند</h3>
+                <p>با کمتر از ۱ میلیون تومان در ماه، تمام کارهای اداری مجموعه‌ات خودکار انجام می‌شه. صرفه‌جویی واقعی، از همون ماه اول.</p>
+            </div>
+
+            <div class="why-card">
+                <div class="why-num">۰۴</div>
+                <h3>راهنمای کامل فارسی</h3>
+                <p>همراه برنامه، ویدیو و راهنمای PDF فارسی ارائه می‌شه تا خودت بتونی همه‌کار رو انجام بدی.</p>
+            </div>
+
+            <div class="why-card">
+                <div class="why-num">۰۵</div>
+                <h3>قابل سفارشی‌سازی</h3>
+                <p>می‌توانیم برنامه را متناسب با نیاز خاص مجموعه‌ی شما سفارشی‌سازی کنیم.</p>
+            </div>
+
+            <div class="why-card">
+                <div class="why-num">۰۶</div>
+                <h3>تست بدون ریسک</h3>
+                <p>۳۰ روز کاملاً رایگان. بدون کارت بانکی، بدون تعهد. اگه راضی نبودی، هیچی از دست نمی‌دی.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     SCREENSHOTS
+     ============================================================ -->
+<section id="screenshots">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">📸 نگاهی به برنامه</div>
+            <h2 class="section-title">طراحی مدرن و کاربری آسان</h2>
+            <p class="section-subtitle">
+                رابط کاربری زیبا، ساده و حرفه‌ای که کار با برنامه را لذت‌بخش می‌کند.
+            </p>
+        </div>
+
+        <div class="screenshots-showcase">
+            <!-- Mockup 1: Dashboard -->
+            <div class="mockup">
+                <div class="mockup-header">
+                    <div class="mockup-dots">
+                        <span class="mockup-dot"></span>
+                        <span class="mockup-dot"></span>
+                        <span class="mockup-dot"></span>
+                    </div>
+                    <span class="mockup-title">📊 داشبورد</span>
+                </div>
+                <div class="mockup-body">
+                    <div class="mock-dashboard">
+                        <div class="mock-stat">
+                            <div class="mock-stat-value">۲۴۷</div>
+                            <div class="mock-stat-label">کل اعضا</div>
+                        </div>
+                        <div class="mock-stat">
+                            <div class="mock-stat-value">۲۱۵</div>
+                            <div class="mock-stat-label">فعال</div>
+                        </div>
+                        <div class="mock-stat">
+                            <div class="mock-stat-value">۱۲</div>
+                            <div class="mock-stat-label">کلاس‌ها</div>
+                        </div>
+                        <div class="mock-stat">
+                            <div class="mock-stat-value">۹۸٪</div>
+                            <div class="mock-stat-label">رضایت</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-bottom: 6px;">
+                            <span>درآمد ماهانه</span>
+                            <span style="color: var(--green); font-weight: 700;">۸۵٪</span>
+                        </div>
+                        <div class="mock-bar">
+                            <div class="mock-bar-fill" style="width: 85%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mockup 2: Athletes List -->
+            <div class="mockup">
+                <div class="mockup-header">
+                    <div class="mockup-dots">
+                        <span class="mockup-dot"></span>
+                        <span class="mockup-dot"></span>
+                        <span class="mockup-dot"></span>
+                    </div>
+                    <span class="mockup-title">👥 مدیریت اعضا</span>
+                </div>
+                <div class="mockup-body">
+                    <div class="mock-list">
+                        <div class="mock-row">
+                            <div class="mock-avatar">ع</div>
+                            <div class="mock-row-text">علی محمدی</div>
+                            <div class="mock-row-badge mock-badge-green">فعال</div>
+                        </div>
+                        <div class="mock-row">
+                            <div class="mock-avatar">ز</div>
+                            <div class="mock-row-text">زهرا احمدی</div>
+                            <div class="mock-row-badge mock-badge-green">فعال</div>
+                        </div>
+                        <div class="mock-row">
+                            <div class="mock-avatar">ر</div>
+                            <div class="mock-row-text">رضا کریمی</div>
+                            <div class="mock-row-badge mock-badge-gold">در انتظار</div>
+                        </div>
+                        <div class="mock-row">
+                            <div class="mock-avatar">س</div>
+                            <div class="mock-row-text">سارا رضایی</div>
+                            <div class="mock-row-badge mock-badge-green">فعال</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mockup 3: Finance -->
+            <div class="mockup">
+                <div class="mockup-header">
+                    <div class="mockup-dots">
+                        <span class="mockup-dot"></span>
+                        <span class="mockup-dot"></span>
+                        <span class="mockup-dot"></span>
+                    </div>
+                    <span class="mockup-title">💰 امور مالی</span>
+                </div>
+                <div class="mockup-body">
+                    <div class="mock-finance">
+                        <div class="mock-amount">
+                            <div class="mock-amount-label">درآمد این ماه</div>
+                            <div class="mock-amount-value">۸,۵۰۰,۰۰۰ ت</div>
+                        </div>
+                        <div class="mock-stat">
+                            <div class="mock-stat-value" style="color: var(--red);">۱,۲۰۰,۰۰۰</div>
+                            <div class="mock-stat-label">هزینه‌ها (تومان)</div>
+                        </div>
+                        <div class="mock-stat">
+                            <div class="mock-stat-value" style="color: var(--gold);">۲۳</div>
+                            <div class="mock-stat-label">اقساط فعال</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     PRICING
+     ============================================================ -->
+<section id="pricing">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">💰 پلن‌ها</div>
+            <h2 class="section-title">پلن مناسب خودتان را انتخاب کنید</h2>
+            <p class="section-subtitle">
+                همه‌ی پلن‌ها شامل تمام امکانات برنامه هستند. تفاوت فقط در مدت زمان است.
+            </p>
+        </div>
+
+        <div class="pricing-grid">
+            <div class="price-card">
+                <div class="price-name">۱ ماهه</div>
+                <div class="price-amount">۱,۰۰۰,۰۰۰</div>
+                <div class="price-unit">تومان</div>
+                <div class="price-monthly">۱,۰۰۰,۰۰۰ ت/ماه</div>
+            </div>
+
+            <div class="price-card">
+                <div class="price-name">۳ ماهه</div>
+                <div class="price-discount">۱۰٪ تخفیف</div>
+                <div class="price-amount">۲,۷۰۰,۰۰۰</div>
+                <div class="price-unit">تومان</div>
+                <div class="price-monthly">۹۰۰,۰۰۰ ت/ماه</div>
+            </div>
+
+            <div class="price-card">
+                <div class="price-name">۶ ماهه</div>
+                <div class="price-discount">۲۰٪ تخفیف</div>
+                <div class="price-amount">۴,۸۰۰,۰۰۰</div>
+                <div class="price-unit">تومان</div>
+                <div class="price-monthly">۸۰۰,۰۰۰ ت/ماه</div>
+            </div>
+
+            <div class="price-card featured">
+                <div class="price-name">۱ ساله</div>
+                <div class="price-discount">۳۰٪ تخفیف</div>
+                <div class="price-amount">۸,۴۰۰,۰۰۰</div>
+                <div class="price-unit">تومان</div>
+                <div class="price-monthly">۷۰۰,۰۰۰ ت/ماه</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     REGISTRATION FORM
+     ============================================================ -->
+<section id="register" class="register-section">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">🎁 شروع رایگان</div>
+            <h2 class="section-title">۳۰ روز رایگان تست کنید</h2>
+            <p class="section-subtitle">
+                برای شروع، اطلاعات خود را وارد کنید. بلافاصله با شما تماس می‌گیریم.
+            </p>
+        </div>
+
+        <div class="register-card">
+            <div id="registerForm">
+                <div class="register-header">
+                    <h3>📝 فرم ثبت‌نام</h3>
+                    <p>
+                        پس از تکمیل فرم، لینک دانلود و راهنمای شروع برای شما ارسال می‌شود.
+                    </p>
+                </div>
+
+                <form id="signupForm" onsubmit="submitForm(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="firstName">
+                                <span class="required">*</span> نام
+                            </label>
+                            <input 
+                                type="text" 
+                                id="firstName" 
+                                class="form-input" 
+                                placeholder="مثلاً: علی"
+                                required
+                                minlength="2"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="lastName">
+                                <span class="required">*</span> نام خانوادگی
+                            </label>
+                            <input 
+                                type="text" 
+                                id="lastName" 
+                                class="form-input" 
+                                placeholder="مثلاً: محمدی"
+                                required
+                                minlength="2"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="phone">
+                            <span class="required">*</span> شماره تماس
+                        </label>
+                        <input 
+                            type="tel" 
+                            id="phone" 
+                            class="form-input" 
+                            placeholder="مثلاً: 09123456789"
+                            required
+                            pattern="09[0-9]{9}"
+                            maxlength="11"
+                            inputmode="numeric"
+                            style="direction: ltr; text-align: right;"
+                        >
+                        <div class="form-hint">
+                            📱 این شماره برای ارسال لینک دانلود استفاده می‌شود
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-large form-submit">
+                        🚀 شروع رایگان ۳۰ روزه
+                    </button>
+
+                    <div class="form-note">
+                        با ثبت‌نام، <span class="highlight">۳۰ روز استفاده رایگان</span> دریافت می‌کنید.<br>
+                        نیازی به کارت بانکی یا پرداخت اولیه نیست.
+                    </div>
+                </form>
+            </div>
+
+            <!-- Success state -->
+            <div class="form-success" id="successState">
+                <div class="form-success-icon">✓</div>
+                <h3>ثبت‌نام شما با موفقیت انجام شد!</h3>
+                <p>
+                    ممنون <span id="successName" style="color: var(--gold); font-weight: 700;">شما</span> عزیز! 🎉<br>
+                    به‌زودی با شما تماس می‌گیریم و لینک دانلود را ارسال می‌کنیم.
+                </p>
+                <a href="https://web.rubika.ir/#c=u0I694z06ef3f234f2ae3275cf100ed3" 
+                   target="_blank" 
+                   class="btn btn-primary"
+                   style="text-decoration: none;">
+                    💬 پیگیری در روبیکا
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     FAQ
+     ============================================================ -->
+<section id="faq">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">❓ سوالات متداول</div>
+            <h2 class="section-title">سوالات پرتکرار مشتریان</h2>
+            <p class="section-subtitle">
+                اگر سوال دیگری دارید، با ما تماس بگیرید.
+            </p>
+        </div>
+
+        <div class="faq-list">
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    نصب و راه‌اندازی برنامه چقدر طول می‌کشد؟
+                </div>
+                <div class="faq-answer">
+                    نصب برنامه کمتر از ۵ دقیقه طول می‌کشد. فقط کافی است فایل نصب را اجرا کنید و مراحل ساده‌ی نصب را طی کنید. راهنمای کامل فارسی همراه برنامه ارائه می‌شود.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    آیا برای استفاده از برنامه به اینترنت نیاز دارم؟
+                </div>
+                <div class="faq-answer">
+                    خیر! برنامه به‌طور کامل آفلاین کار می‌کند و نیازی به اینترنت ندارد. تمام داده‌های شما به‌صورت محلی روی سیستم خودتان ذخیره می‌شود. فقط برای فعال‌سازی و به‌روزرسانی به اینترنت نیاز است.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    آیا می‌توانم اطلاعات را روی چند کامپیوتر استفاده کنم؟
+                </div>
+                <div class="faq-answer">
+                    بله! با استفاده از قابلیت پشتیبان‌گیری، می‌توانید اطلاعات را روی چند سیستم منتقل کنید. هر لایسنس برای یک دستگاه صادر می‌شود، ولی می‌توانید با پشتیبانی تماس بگیرید و درخواست انتقال دهید.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    اگر اطلاعات سیستم من از بین برود، چه اتفاقی می‌افتد؟
+                </div>
+                <div class="faq-answer">
+                    برنامه به‌طور خودکار از اطلاعات پشتیبان تهیه می‌کند. علاوه بر این، می‌توانید به‌صورت دستی هم نسخه‌ی پشتیبان تهیه کنید. در صورت بروز مشکل، می‌توانید اطلاعات را بازیابی کنید.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    آیا امکان سفارشی‌سازی برنامه وجود دارد؟
+                </div>
+                <div class="faq-answer">
+                    بله! اگر نیاز خاصی دارید که در برنامه نیست، می‌توانیم آن را برای شما اضافه کنیم. برای اطلاع از شرایط و قیمت، با پشتیبانی تماس بگیرید.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    پشتیبانی چگونه انجام می‌شود؟
+                </div>
+                <div class="faq-answer">
+                    پشتیبانی از طریق روبیکا، تلفن و ایمیل ارائه می‌شود. پاسخگویی در سریع‌ترین زمان ممکن انجام می‌شود.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    آیا نسخه‌ی موبایل هم دارد؟
+                </div>
+                <div class="faq-answer">
+                    نسخه‌ی موبایل در حال ساخت است. به‌زودی می‌توانید از روی گوشی هم به اطلاعات دسترسی داشته باشید و مدیریت کنید.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    اگه برنامه خراب بشه یا کار نکنه، پولم برمی‌گرده؟
+                </div>
+                <div class="faq-answer">
+                    بله! ما ۷ روز ضمانت بازگشت وجه داریم. اگه بعد از خرید، برنامه کار نکرد یا راضی نبودی، پولت رو کامل برمی‌گردونیم. بدون هیچ سوالی.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    می‌تونم اطلاعاتم رو از دفتر و اکسل فعلی وارد کنم؟
+                </div>
+                <div class="faq-answer">
+                    بله! برنامه قابلیت وارد کردن اطلاعات از فایل Excel داره. می‌تونی اطلاعات اعضای فعلی‌ت رو یکجا وارد کنی و از همون روز شروع کنی.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    چند نفر می‌تونن همزمان از برنامه استفاده کنن؟
+                </div>
+                <div class="faq-answer">
+                    برنامه برای یک نفر طراحی شده، ولی می‌تونی چند کاربر با سطوح دسترسی مختلف تعریف کنی (مدیر، مربی، منشی). هر کدوم فقط به بخش‌هایی که اجازه داری دسترسی دارن.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    چرا قیمت ۱ ساله از ۱۲ ماه یک‌ماهه ارزون‌تره؟
+                </div>
+                <div class="faq-answer">
+                    چون مشتری‌های بلندمدت برامون ارزشمندن. پلن‌های بلندتر، تخفیف بیشتری دارن تا شما هم صرفه‌جویی کنی.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFaq(this)">
+                    اگر بعد از ۳۰ روز رایگان نخواهم ادامه دهم، چه می‌شود؟
+                </div>
+                <div class="faq-answer">
+                    هیچ اجباری به خرید ندارید. بعد از ۳۰ روز، برنامه به‌طور خودکار قفل می‌شود و اطلاعات شما محفوظ باقی می‌ماند. هر زمان که تصمیم گرفتید خرید کنید، می‌توانید ادامه دهید.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     STORY
+     ============================================================ -->
+<section id="story" class="story-section">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">📖 داستان پروژه</div>
+            <h2 class="section-title">چگونه پالس متولد شد</h2>
+        </div>
+
+        <div class="story-card">
+            <div class="story-content">
+                <p>
+                    همه‌چیز از یک مشکل ساده شروع شد: چرا مدیریت یک مجموعه‌ی آموزشی یا ورزشی باید این‌قدر سخت باشد؟
+                </p>
+                <p>
+                    دیدم که بسیاری از باشگاه‌ها و آموزشگاه‌ها هنوز از دفتر و اکسل برای مدیریت استفاده می‌کنند. این روش نه تنها زمان‌بر است، بلکه در طولانی‌مدت باعث از دست رفتن اطلاعات، فراموشی اقساط و سردرگمی می‌شود.
+                </p>
+                <p>
+                    نرم‌افزارهای موجود یا بسیار گران بودند، یا به اینترنت وابسته، یا اصلاً برای کاربر ایرانی طراحی نشده بودند. تصمیم گرفتم راه‌حلی بسازم که هم ساده باشد، هم کامل، و هم به زبان و فرهنگ ما ایرانی‌ها نزدیک.
+                </p>
+                <p>
+                    پالس مدیریت حاصل ماه‌ها تلاش و کدنویسی است. هر صفحه، هر دکمه و هر قابلیت، با دقت و وسواس طراحی شده تا تجربه‌ای روان و دلپذیر برای کاربر ایجاد کند. حالا پالس آماده است تا در کنار شما باشد و کمک کند کسب‌وکارتان را حرفه‌ای‌تر مدیریت کنید.
+                </p>
+
+                <div class="story-signature">
+                    <div class="story-avatar">👨‍💻</div>
+                    <div class="story-signature-info">
+                        <div class="story-signature-name">ایلیا صالح‌زاده</div>
+                        <div class="story-signature-title">توسعه‌دهنده‌ی پالس مدیریت</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     FINAL CTA
+     ============================================================ -->
+<section class="final-cta">
+    <div class="container">
+        <h2>آماده‌اید کسب‌وکارتان را متحول کنید؟</h2>
+        <p>
+            همین امروز شروع کنید و ۳۰ روز به‌صورت رایگان از تمام امکانات پالس استفاده کنید.
+        </p>
+        <div class="btn-group">
+            <a href="#register" class="btn btn-primary btn-large">
+                🚀 شروع رایگان
+            </a>
+            <a href="https://web.rubika.ir/#c=u0I694z06ef3f234f2ae3275cf100ed3" 
+               target="_blank"
+               class="btn btn-outline btn-large">
+                💬 تماس در روبیکا
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h4>
+                    <div class="logo-icon" style="width: 32px; height: 32px; font-size: 16px;">💎</div>
+                    پالس مدیریت
+                </h4>
+                <p>
+                    سیستم هوشمند مدیریت آموزشی و ورزشی برای باشگاه‌ها، آموزشگاه‌ها، مدارس و مراکز آموزشی.
+                </p>
+            </div>
+
+            <div>
+                <h5>دسترسی سریع</h5>
+                <ul class="footer-links">
+                    <li><a href="#features">✨ ویژگی‌ها</a></li>
+                    <li><a href="#pricing">💰 پلن‌ها</a></li>
+                    <li><a href="#faq">❓ سوالات</a></li>
+                    <li><a href="#register">🚀 شروع رایگان</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5>تماس با ما</h5>
+                <ul class="footer-links">
+                    <li>
+                        <a href="https://web.rubika.ir/#c=u0I694z06ef3f234f2ae3275cf100ed3" target="_blank">
+                            💬 روبیکا
+                        </a>
+                    </li>
+                    <li>
+                        <a href="tel:09133984340">
+                            📱 ۰۹۱۳-۳۹۸-۴۳۴۰
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-developer">
+            <div class="footer-developer-text">
+                توسعه‌دهنده: <span class="name">ایلیا صالح‌زاده</span>
+                <span class="age">— ۱۶ ساله</span>
+                <span class="for-iran">برای مردم عزیز ایران 🇮🇷</span>
+            </div>
+            <div class="footer-copy">
+                © ۱۴۰۵ پالس مدیریت — تمامی حقوق محفوظ است
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- ============================================================
+     TOAST
+     ============================================================ -->
+<div class="toast" id="toast">
+    <span id="toastIcon">✅</span>
+    <span id="toastMsg">پیام</span>
+</div>
+
+<script>
+/* ============================================================
+   THEME
+   ============================================================ */
+function initTheme() {
+    const saved = localStorage.getItem('pulse_landing_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', saved);
+    updateThemeIcon(saved);
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('pulse_landing_theme', next);
+    updateThemeIcon(next);
+}
+
+function updateThemeIcon(theme) {
+    document.getElementById('themeBtn').textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+
+/* ============================================================
+   MOBILE MENU
+   ============================================================ */
+function toggleMenu() {
+    document.getElementById('navLinks').classList.toggle('open');
+}
+
+document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+        document.getElementById('navLinks').classList.remove('open');
+    });
+});
+
+/* ============================================================
+   NAVBAR SCROLL
+   ============================================================ */
+window.addEventListener('scroll', () => {
+    const navbar = document.getElementById('navbar');
+    if (window.scrollY > 20) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
+    }
+});
+
+/* ============================================================
+   FAQ
+   ============================================================ */
+function toggleFaq(el) {
+    const item = el.parentElement;
+    const wasOpen = item.classList.contains('open');
+
+    document.querySelectorAll('.faq-item').forEach(faq => {
+        faq.classList.remove('open');
+    });
+
+    if (!wasOpen) {
+        item.classList.add('open');
+    }
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const icon = document.getElementById('toastIcon');
+    const msg = document.getElementById('toastMsg');
+
+    toast.classList.remove('error');
+    if (type === 'error') {
+        toast.classList.add('error');
+        icon.textContent = '⚠️';
+    } else {
+        icon.textContent = '✅';
+    }
+
+    msg.textContent = message;
+    toast.classList.add('show');
+
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3500);
+}
+
+/* ============================================================
+   REGISTRATION FORM
+   ============================================================ */
+function validateForm(firstName, lastName, phone) {
+    if (!firstName || firstName.trim().length < 2) {
+        return 'لطفاً نام خود را وارد کنید (حداقل ۲ حرف)';
+    }
+    if (!lastName || lastName.trim().length < 2) {
+        return 'لطفاً نام خانوادگی خود را وارد کنید (حداقل ۲ حرف)';
+    }
+
+    // تبدیل اعداد فارسی به انگلیسی
+    const cleanPhone = phone.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+    const phoneRegex = /^09[0-9]{9}$/;
+
+    if (!phoneRegex.test(cleanPhone)) {
+        return 'شماره تماس باید با ۰۹ شروع شود و ۱۱ رقم باشد';
+    }
+
+    return null;
+}
+
+function submitForm(event) {
+    event.preventDefault();
+
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+
+    const error = validateForm(firstName, lastName, phone);
+    if (error) {
+        showToast(error, 'error');
+        return;
+    }
+
+    // تبدیل اعداد فارسی به انگلیسی
+    const cleanPhone = phone.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+
+    // ساخت پیام برای روبیکا
+    const message = 
+        `سلام 👋\n\n` +
+        `می‌خوام توی دوره‌ی رایگان ۳۰ روزه‌ی پالس مدیریت شرکت کنم.\n\n` +
+        `━━━━━━━━━━━━━\n` +
+        `👤 نام: ${firstName} ${lastName}\n` +
+        `📱 شماره تماس: ${cleanPhone}\n` +
+        `━━━━━━━━━━━━━\n\n` +
+        `لطفاً لینک دانلود و راهنمای شروع رو برام ارسال کنید.\n\n` +
+        `با تشکر 🙏`;
+
+    // ذخیره در localStorage (برای آمار محلی)
+    try {
+        const registrations = JSON.parse(localStorage.getItem('pulse_registrations') || '[]');
+        registrations.push({
+            firstName,
+            lastName,
+            phone: cleanPhone,
+            date: new Date().toISOString()
+        });
+        localStorage.setItem('pulse_registrations', JSON.stringify(registrations));
+    } catch (e) {
+        console.warn('localStorage error:', e);
+    }
+
+    // کپی پیام در clipboard
+    copyToClipboard(message).then(() => {
+        // نمایش موفقیت
+        document.getElementById('successName').textContent = firstName;
+
+        document.getElementById('registerForm').style.display = 'none';
+        document.getElementById('successState').classList.add('show');
+
+        showToast('ثبت‌نام شما انجام شد!', 'success');
+
+        // باز کردن روبیکا
+        setTimeout(() => {
+            window.open('https://web.rubika.ir/#c=u0I694z06ef3f234f2ae3275cf100ed3', '_blank');
+        }, 1500);
+    });
+}
+
+/* ============================================================
+   CLIPBOARD
+   ============================================================ */
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+    }
+    return Promise.resolve(fallbackCopy(text));
+}
+
+function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+}
+
+/* ============================================================
+   PHONE INPUT: تبدیل خودکار اعداد فارسی
+   ============================================================ */
+document.getElementById('phone')?.addEventListener('input', function(e) {
+    let value = this.value;
+    // تبدیل اعداد فارسی به انگلیسی
+    value = value.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+    // فقط اعداد
+    value = value.replace(/[^0-9]/g, '');
+    // حداکثر ۱۱ رقم
+    if (value.length > 11) value = value.slice(0, 11);
+    this.value = value;
+});
+
+/* ============================================================
+   SMOOTH SCROLL
+   ============================================================ */
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+
+        const target = document.querySelector(targetId);
+        if (target) {
+            e.preventDefault();
+            const offset = 80;
+            const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
+            window.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'
+            });
+        }
+    });
+});
+
+/* ============================================================
+   INIT
+   ============================================================ */
+initTheme();
+</script>
+</body>
+</html>

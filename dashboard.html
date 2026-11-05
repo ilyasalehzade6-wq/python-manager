@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>داشبورد — پورتال اعضا</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> tailwind.config = { darkMode: 'class' } </script>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Vazirmatn', sans-serif; background-color: #09090b; color: #fff; -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
+        
+        /* 🎨 Light Mode Overrides */
+        html:not(.dark) body { background-color: #f4f4f5 !important; color: #18181b !important; }
+        html:not(.dark) .bg-\[\#121215\], html:not(.dark) .bg-\[\#111111\] { background-color: #ffffff !important; border-color: #e4e4e7 !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important; }
+        html:not(.dark) .text-white, html:not(.dark) .text-zinc-100, html:not(.dark) .text-zinc-200 { color: #18181b !important; }
+        html:not(.dark) .text-zinc-400, html:not(.dark) .text-zinc-500 { color: #71717a !important; }
+        html:not(.dark) .border-zinc-800 { border-color: #e4e4e7 !important; }
+        html:not(.dark) .bg-zinc-800 { background-color: #e4e4e7 !important; color: #18181b !important; }
+        html:not(.dark) .bg-\[\#09090b\] { background-color: #f4f4f5 !important; }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 bg-[#111111] border-b border-zinc-800 px-4 py-3 flex items-center justify-between transition-colors">
+        <div class="flex items-center gap-3">
+            <div id="userAvatar" class="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 font-bold text-lg">ع</div>
+            <div>
+                <div id="userName" class="text-sm font-bold text-white leading-tight">...</div>
+                <div id="userCode" class="text-[11px] text-zinc-400 font-mono mt-0.5">...</div>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <button onclick="toggleTheme()" class="p-2 rounded-lg bg-[#09090b] border border-zinc-800 text-zinc-400 hover:text-white transition-colors">
+                <i data-lucide="moon" class="w-4 h-4 hidden dark:block stroke-[1.5]"></i>
+                <i data-lucide="sun" class="w-4 h-4 block dark:hidden stroke-[1.5]"></i>
+            </button>
+            
+            <button onclick="openFullChat()" class="p-2 rounded-lg bg-[#09090b] border border-zinc-800 text-zinc-400 hover:text-white relative transition-colors">
+                <i data-lucide="message-square" class="w-4 h-4 stroke-[1.5]"></i>
+                <span id="chatBadge" class="absolute -top-1 -left-1 bg-amber-500 text-black text-[9px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+            </button>
+            
+            <button onclick="logout()" class="p-2 rounded-lg bg-[#09090b] border border-zinc-800 text-red-500 hover:bg-red-500/10 transition-colors">
+                <i data-lucide="log-out" class="w-4 h-4 stroke-[1.5]"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-md mx-auto p-4 pb-10">
+        
+        <!-- ========================================== -->
+        <!-- 📱 MAIN MENU (Nimkat Style Grid)           -->
+        <!-- ========================================== -->
+        <div id="mainMenu" class="fade-in">
+            <h1 class="text-lg font-bold text-white mb-4">منوی اصلی</h1>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <!-- Member Card -->
+                <button onclick="openSection('card')" class="flex flex-col items-center justify-center p-4 bg-[#121215] border border-zinc-800 rounded-2xl hover:border-amber-500 transition-all shadow-sm active:scale-95">
+                    <i data-lucide="credit-card" class="w-8 h-8 text-amber-500 mb-3 stroke-[1.5]"></i>
+                    <span class="text-sm font-bold text-zinc-200">کارت عضویت</span>
+                </button>
+
+                <!-- Tuitions -->
+                <button onclick="openSection('tuitions')" class="flex flex-col items-center justify-center p-4 bg-[#121215] border border-zinc-800 rounded-2xl hover:border-amber-500 transition-all shadow-sm active:scale-95 relative">
+                    <i data-lucide="wallet" class="w-8 h-8 text-amber-500 mb-3 stroke-[1.5]"></i>
+                    <span class="text-sm font-bold text-zinc-200">شهریه‌ها</span>
+                    <span id="menuTuitionBadge" class="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full hidden"></span>
+                </button>
+
+                <!-- Installments -->
+                <button onclick="openSection('installments')" class="flex flex-col items-center justify-center p-4 bg-[#121215] border border-zinc-800 rounded-2xl hover:border-amber-500 transition-all shadow-sm active:scale-95">
+                    <i data-lucide="calendar" class="w-8 h-8 text-amber-500 mb-3 stroke-[1.5]"></i>
+                    <span class="text-sm font-bold text-zinc-200">اقساط</span>
+                </button>
+
+                <!-- Payments -->
+                <button onclick="openSection('payments')" class="flex flex-col items-center justify-center p-4 bg-[#121215] border border-zinc-800 rounded-2xl hover:border-amber-500 transition-all shadow-sm active:scale-95">
+                    <i data-lucide="receipt" class="w-8 h-8 text-amber-500 mb-3 stroke-[1.5]"></i>
+                    <span class="text-sm font-bold text-zinc-200">سابقه پرداخت</span>
+                </button>
+
+                <!-- Attendance -->
+                <button onclick="openSection('attendance')" class="flex flex-col items-center justify-center p-4 bg-[#121215] border border-zinc-800 rounded-2xl hover:border-amber-500 transition-all shadow-sm active:scale-95">
+                    <i data-lucide="check-square" class="w-8 h-8 text-amber-500 mb-3 stroke-[1.5]"></i>
+                    <span class="text-sm font-bold text-zinc-200">حضور و غیاب</span>
+                </button>
+
+                <!-- Schedule -->
+                <button onclick="openSection('schedule')" class="flex flex-col items-center justify-center p-4 bg-[#121215] border border-zinc-800 rounded-2xl hover:border-amber-500 transition-all shadow-sm active:scale-95">
+                    <i data-lucide="table" class="w-8 h-8 text-amber-500 mb-3 stroke-[1.5]"></i>
+                    <span class="text-sm font-bold text-zinc-200">برنامه هفتگی</span>
+                </button>
+                
+                <!-- Chat -->
+                <button onclick="openFullChat()" class="flex flex-col items-center justify-center p-4 bg-[#121215] border border-zinc-800 rounded-2xl hover:border-amber-500 transition-all shadow-sm active:scale-95">
+                    <i data-lucide="message-circle" class="w-8 h-8 text-amber-500 mb-3 stroke-[1.5]"></i>
+                    <span class="text-sm font-bold text-zinc-200">پیام‌رسان</span>
+                </button>
+
+                <!-- Support -->
+                <button onclick="contactSupport()" class="flex flex-col items-center justify-center p-4 bg-[#121215] border border-zinc-800 rounded-2xl hover:border-amber-500 transition-all shadow-sm active:scale-95">
+                    <i data-lucide="headphones" class="w-8 h-8 text-amber-500 mb-3 stroke-[1.5]"></i>
+                    <span class="text-sm font-bold text-zinc-200">پشتیبانی</span>
+                </button>
+            </div>
+            
+            <!-- Quick Summary (overdue warning) -->
+            <div id="overdueBanner" class="mt-6 bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-center justify-between hidden">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500"></i>
+                    <div>
+                        <div id="overdueTitle" class="text-xs font-bold text-red-500">شهریه معوق</div>
+                        <div id="overdueText" class="text-[10px] text-zinc-400 mt-0.5"></div>
+                    </div>
+                </div>
+                <div id="overdueAmount" class="text-sm font-bold text-red-500"></div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- 📄 SECTION VIEWS                           -->
+        <!-- ========================================== -->
+        
+        <!-- Back Button (hidden by default) -->
+        <div id="backBtnContainer" class="hidden mb-4">
+            <button onclick="closeSection()" class="flex items-center gap-2 text-sm text-zinc-400 hover:text-white bg-[#121215] border border-zinc-800 px-3 py-1.5 rounded-lg transition-colors">
+                <i data-lucide="arrow-right" class="w-4 h-4"></i> بازگشت به منو
+            </button>
+        </div>
+
+        <!-- View: Member Card -->
+        <div id="view-card" class="hidden fade-in">
+            <h2 class="text-lg font-bold text-white mb-4">کارت عضویت دیجیتال</h2>
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#1a1a2e] to-[#0f0f1a] border border-zinc-800 p-6 shadow-xl">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-2 text-amber-500">
+                        <i data-lucide="diamond" class="w-5 h-5"></i>
+                        <span class="text-sm font-bold tracking-wider">پالس مدیریت</span>
+                    </div>
+                    <i data-lucide="wifi" class="w-6 h-6 text-zinc-600 rotate-90"></i>
+                </div>
+                <div class="grid grid-cols-2 gap-5 mb-2">
+                    <div>
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">نام</div>
+                        <div id="cardName" class="text-base font-bold text-white truncate">—</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">کلاس</div>
+                        <div id="cardClass" class="text-base font-bold text-white truncate">—</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">کد عضویت</div>
+                        <div id="cardCode" class="text-base font-bold text-amber-500 font-mono tracking-widest">—</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">تاریخ عضویت</div>
+                        <div id="cardJoinDate" class="text-base font-bold text-white">—</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 bg-[#121215] border border-zinc-800 rounded-xl p-4 flex justify-between items-center">
+                <span class="text-sm text-zinc-400">مدت زمان عضویت:</span>
+                <span id="memberDays" class="text-lg font-bold text-amber-500 font-mono">0 روز</span>
+            </div>
+        </div>
+
+        <!-- View: Tuitions -->
+        <div id="view-tuitions" class="hidden fade-in">
+            <h2 class="text-lg font-bold text-white mb-4">شهریه‌های من</h2>
+            <div id="tuitionSummary" class="grid grid-cols-2 gap-3 mb-4 hidden">
+                <div class="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-center">
+                    <div class="text-xs text-red-400 mb-1">معوق</div>
+                    <div id="tuitionUnpaidAmount" class="text-lg font-bold text-red-500">۰</div>
+                </div>
+                <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-center">
+                    <div class="text-xs text-emerald-400 mb-1">پرداخت‌شده</div>
+                    <div id="tuitionPaidAmount" class="text-lg font-bold text-emerald-500">۰</div>
+                </div>
+            </div>
+            <div id="tuitionsList" class="bg-[#121215] border border-zinc-800 rounded-xl flex flex-col divide-y divide-zinc-800 overflow-hidden shadow-sm">
+                <div class="p-6 text-center text-sm text-zinc-500">در حال بارگذاری...</div>
+            </div>
+        </div>
+
+        <!-- View: Installments -->
+        <div id="view-installments" class="hidden fade-in">
+            <h2 class="text-lg font-bold text-white mb-4">اقساط من</h2>
+            <div id="installmentsList" class="bg-[#121215] border border-zinc-800 rounded-xl flex flex-col divide-y divide-zinc-800 overflow-hidden shadow-sm">
+                <div class="p-6 text-center text-sm text-zinc-500">در حال بارگذاری...</div>
+            </div>
+        </div>
+
+        <!-- View: Payments -->
+        <div id="view-payments" class="hidden fade-in">
+            <h2 class="text-lg font-bold text-white mb-4">سابقه پرداخت‌ها</h2>
+            <div id="paymentsList" class="bg-[#121215] border border-zinc-800 rounded-xl flex flex-col divide-y divide-zinc-800 overflow-hidden shadow-sm">
+                <div class="p-6 text-center text-sm text-zinc-500">در حال بارگذاری...</div>
+            </div>
+        </div>
+
+        <!-- View: Attendance -->
+        <div id="view-attendance" class="hidden fade-in">
+            <h2 class="text-lg font-bold text-white mb-4">حضور و غیاب</h2>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-center">
+                    <div class="text-xs text-emerald-400 mb-1">حضور این ماه</div>
+                    <div id="attendanceCount" class="text-lg font-bold text-emerald-500">0</div>
+                </div>
+                <div class="bg-[#121215] border border-zinc-800 rounded-xl p-4 text-center">
+                    <div class="text-xs text-zinc-400 mb-1">کل جلسات ثبت شده</div>
+                    <div id="totalAttendanceCount" class="text-lg font-bold text-white">0</div>
+                </div>
+            </div>
+            <div id="attendanceGrid" class="grid grid-cols-5 gap-2">
+                <div class="col-span-5 p-4 text-center text-sm text-zinc-500 bg-[#121215] border border-zinc-800 rounded-xl">در حال بارگذاری...</div>
+            </div>
+        </div>
+
+        <!-- View: Schedule -->
+        <div id="view-schedule" class="hidden fade-in">
+            <h2 class="text-lg font-bold text-white mb-4">برنامه هفتگی کلاس</h2>
+            <div id="classScheduleSection">
+                <div class="bg-[#121215] border border-zinc-800 rounded-xl p-5 shadow-sm">
+                    <div class="flex justify-between items-center mb-4 border-b border-zinc-800 pb-3">
+                        <span id="scheduleClassName" class="font-bold text-base text-white">—</span>
+                        <span id="scheduleCoach" class="text-xs text-zinc-400"></span>
+                    </div>
+                    <div id="scheduleDays" class="grid grid-cols-2 gap-3"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Full Screen Chat -->
+    <div id="chatFullScreen" class="fixed inset-0 z-50 bg-[#09090b] flex-col hidden">
+        <div class="bg-[#111111] border-b border-zinc-800 p-4 flex items-center gap-3 shrink-0">
+            <button onclick="closeFullChat()" class="p-1.5 text-zinc-400 hover:text-white bg-zinc-800 rounded-lg"><i data-lucide="arrow-right" class="w-5 h-5"></i></button>
+            <h2 id="chatFsTitle" class="font-bold text-white flex-1 text-sm">پیام‌رسان</h2>
+            <button onclick="loadMemberChatRooms()" class="p-1.5 text-zinc-400 hover:text-white"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+        </div>
+        <div id="chatFsRoomList" class="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+            <div class="text-center py-10 text-zinc-500 text-sm">در حال بارگذاری...</div>
+        </div>
+        <div id="chatFsConversation" class="flex-1 flex flex-col overflow-hidden hidden">
+            <div id="chatFsMessages" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-[#09090b]"></div>
+            <div class="p-3 border-t border-zinc-800 bg-[#111111] flex gap-2 shrink-0">
+                <textarea id="chatFsInput" placeholder="پیام خود را بنویسید..." rows="1" class="flex-1 bg-[#09090b] border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 resize-none max-h-32 placeholder-zinc-600"></textarea>
+                <button id="chatFsSend" onclick="sendMemberChatMessage()" class="bg-amber-500 text-black p-3 rounded-xl hover:bg-amber-400 transition-colors shrink-0 flex items-center justify-center">
+                    <i data-lucide="send" class="w-5 h-5 stroke-[2]"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/license-utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script> lucide.createIcons(); </script>
+</body>
+</html>
