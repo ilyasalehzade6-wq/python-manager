@@ -1,14 +1,11 @@
 
-window.s = function(id, text) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = text;
-};
-
-
-
-
 let supabaseClient = null;
 let currentUser = null;
+
+function setText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+}
 
 function parseAnyDate(str) {
     if (!str) return null;
@@ -78,18 +75,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('pulse_theme') === 'light') document.documentElement.classList.remove('dark');
     else document.documentElement.classList.add('dark');
 
-    
+    // Render User Info
     setText('userName', currentUser.full_name || 'عضو');
     setText('userCode', currentUser.member_code || '—');
     setText('userAvatar', (currentUser.full_name || 'ع')[0]);
     setText('cardName', currentUser.full_name || '—');
     setText('cardClass', currentUser.class_name || '—');
     setText('cardCode', currentUser.member_code || '—');
+    
     if (currentUser.join_date) {
         const d = parseAnyDate(currentUser.join_date);
         if (d) {
             setText('cardJoinDate', toShamsi(d));
-            setText('memberDays', Math.max(0, Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24))).toLocaleString('fa-IR') + ' روز');
+            const days = Math.max(0, Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24)));
+            setText('memberDays', days.toLocaleString('fa-IR') + ' روز');
+        } else {
+            setText('cardJoinDate', String(currentUser.join_date));
         }
     }
 
@@ -100,9 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadData() {
     try {
         if (!currentUser || !currentUser.id) throw new Error("کاربر یافت نشد");
-        
+
+        // ۱. اطلاعات مالی
         const fetchPromise = supabaseClient.rpc('get_member_finance', { p_member_id: currentUser.id });
-        const { data, error } = await withTimeout(fetchPromise, 5000);
+        const { data, error } = await withTimeout(fetchPromise, 6000);
         if (error) throw error;
 
         const installments = data?.installments || [];
@@ -120,18 +122,18 @@ async function loadData() {
         setText('attendanceCount', toPersianDigits(attendances.length));
         setText('totalAttendanceCount', toPersianDigits(attendances.length));
 
-        try {
-            const tPromise = supabaseClient.rpc('get_member_tuitions', { p_member_id: currentUser.id });
-            const { data: tuitionsData } = await withTimeout(tPromise, 5000);
-            renderTuitions(tuitionsData?.tuitions || []);
-        } catch(e) { renderTuitions([]); }
+        // ۲. شهریه‌ها
+        const tPromise = supabaseClient.rpc('get_member_tuitions', { p_member_id: currentUser.id });
+        const { data: tuitionsData } = await withTimeout(tPromise, 6000);
+        renderTuitions(tuitionsData?.tuitions || []);
 
     } catch (err) {
         console.error('Load error:', err);
-        const errHtml = '<div class="p-6 text-center text-sm text-red-500">خطا در بارگذاری (اتصال کند است)</div>';
+        const errHtml = '<div class="p-6 text-center text-sm text-red-500">خطا در بارگذاری (اتصال کند است یا داده‌ای وجود ندارد)</div>';
         const elPay = document.getElementById('paymentsList'); if (elPay) elPay.innerHTML = errHtml;
         const elInst = document.getElementById('installmentsList'); if (elInst) elInst.innerHTML = errHtml;
         const elAtt = document.getElementById('attendanceGrid'); if (elAtt) elAtt.innerHTML = errHtml;
+        const elTui = document.getElementById('tuitionsList'); if (elTui) elTui.innerHTML = errHtml;
     }
 }
 
@@ -184,6 +186,7 @@ function renderTuitions(items) {
     el.innerHTML = [...items].sort((a, b) => a.is_paid ? 1 : -1).map(item => '<div class="p-4 flex items-center justify-between hover:bg-zinc-800/30 transition-colors"><div class="flex flex-col"><div class="text-sm font-bold text-white mb-1">' + formatShamsiMonth(item.month) + '</div></div><div class="text-left"><div class="text-sm font-bold text-amber-500 font-mono">' + formatMoney(item.amount) + '</div></div></div>').join('');
 }
 
+// Navigation Functions
 window.openSection = function(sectionName) {
     document.getElementById('mainMenu')?.classList.add('hidden');
     document.getElementById('backBtnContainer')?.classList.remove('hidden');
@@ -207,6 +210,7 @@ window.toggleTheme = function() {
 window.logout = function() { if (confirm('از حساب خارج می‌شوید؟')) { localStorage.removeItem('pulse_user'); window.location.href = 'index.html'; } };
 window.contactSupport = function() { window.open(RUBIKA_URL, '_blank'); };
 
+// Chat
 let currentChatRoomId = null;
 let chatRefreshTimer = null;
 
@@ -215,7 +219,6 @@ window.openFullChat = function() {
     if (fs) { fs.classList.remove('hidden'); fs.classList.add('flex'); }
     loadMemberChatRooms();
 };
-
 window.closeFullChat = function() {
     const fs = document.getElementById('chatFullScreen');
     if (fs) { fs.classList.add('hidden'); fs.classList.remove('flex'); }
@@ -230,7 +233,6 @@ window.closeFullChat = function() {
 async function loadMemberChatRooms() {
     const list = document.getElementById('chatFsRoomList');
     if (!list) return;
-    
     list.innerHTML = '<div class="text-center py-10 text-zinc-500 text-sm flex flex-col items-center gap-2"><i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> در حال بارگذاری...</div>';
     if (window.lucide) lucide.createIcons();
 
@@ -245,12 +247,12 @@ async function loadMemberChatRooms() {
         list.innerHTML = rooms.map(r => {
             const isPublic = r.room_type === 'public';
             const name = isPublic ? 'گروه عمومی' : 'گفت‌وگو با مدیر';
-            return '<div class="flex items-center gap-3 p-3 bg-[#121215] border border-zinc-800 rounded-xl cursor-pointer hover:border-amber-500 transition-colors" onclick="openMemberChatRoom(\'' + r.room_id + '\', \'' + name + '\')"><div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400 shrink-0"><i data-lucide="' + (isPublic ? 'globe' : 'user') + '" class="w-5 h-5"></i></div><div class="flex-1 min-w-0 text-right"><div class="text-sm font-bold text-white truncate">' + name + '</div><div class="text-xs text-zinc-400 truncate mt-1">' + (r.last_message || 'شروع گفتگو') + '</div></div>' + (r.unread > 0 ? '<div class="bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">' + r.unread + '</div>' : '') + '</div>';
+            return '<div class="flex items-center gap-3 p-3 bg-[#121215] border border-zinc-800 rounded-xl cursor-pointer hover:border-amber-500 transition-colors" onclick="openMemberChatRoom('' + r.room_id + '', '' + name + '')"><div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400 shrink-0"><i data-lucide="' + (isPublic ? 'globe' : 'user') + '" class="w-5 h-5"></i></div><div class="flex-1 min-w-0 text-right"><div class="text-sm font-bold text-white truncate">' + name + '</div><div class="text-xs text-zinc-400 truncate mt-1">' + (r.last_message || 'شروع گفتگو') + '</div></div>' + (r.unread > 0 ? '<div class="bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">' + r.unread + '</div>' : '') + '</div>';
         }).join('');
         if (window.lucide) lucide.createIcons();
     } catch (err) {
         console.error('Chat rooms error:', err);
-        list.innerHTML = '<div class="text-center py-10 text-red-500 text-sm">' + (err.message === 'Timeout' ? 'اتصال به سرور طول کشید.' : 'خطا در بارگذاری گفتگوها') + '</div>';
+        list.innerHTML = '<div class="text-center py-10 text-red-500 text-sm">خطا در بارگذاری گفتگوها</div>';
     }
 }
 
@@ -305,15 +307,3 @@ async function sendMemberChatMessage() {
 
 function startChatRefresh() { stopChatRefresh(); chatRefreshTimer = setInterval(loadMemberChatMessages, 3000); }
 function stopChatRefresh() { if (chatRefreshTimer) { clearInterval(chatRefreshTimer); chatRefreshTimer = null; } }
-
-document.addEventListener('DOMContentLoaded', () => {
-    const inp = document.getElementById('chatFsInput');
-    if (inp) {
-        inp.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey && !/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-                e.preventDefault();
-                sendMemberChatMessage();
-            }
-        });
-    }
-});

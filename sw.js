@@ -1,3 +1,4 @@
+
 const CACHE_NAME = 'pulse-portal-v' + Date.now();
 const STATIC_ASSETS = ['./', './index.html', './dashboard.html', './css/style.css', './css/dashboard.css', './js/license-utils.js', './js/config.js', './js/auth.js', './js/dashboard.js', './manifest.json'];
 
