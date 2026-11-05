@@ -1,4 +1,3 @@
-
 let supabaseClient = null;
 let currentUser = null;
 
@@ -26,7 +25,7 @@ function toShamsi(date) {
     let jm, jd;
     if (days < 186) { jm = 1 + Math.floor(days / 31); jd = 1 + (days % 31); }
     else { jm = 7 + Math.floor((days - 186) / 30); jd = 1 + ((days - 186) % 30); }
-    return toPersianDigits(`${jy}/${String(jm).padStart(2, '0')}/${String(jd).padStart(2, '0')}`);
+    return toPersianDigits(jy + '/' + String(jm).padStart(2, '0') + '/' + String(jd).padStart(2, '0'));
 }
 
 function toPersianDigits(input) {
@@ -37,6 +36,26 @@ function toPersianDigits(input) {
 function formatMoney(amount) {
     if (!amount) return '۰';
     return toPersianDigits(Number(amount).toLocaleString('en-US'));
+}
+
+function formatShamsiMonth(month) {
+    if (!month) return '—';
+    const parts = String(month).split('/');
+    if (parts.length !== 2) return month;
+    const names = ['', 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+    return (names[parseInt(parts[1], 10)] || '?') + ' ' + toPersianDigits(parts[0]);
+}
+
+function escapeHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function withTimeout(promise, ms = 5000) {
+    return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), ms))
+    ]);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -50,7 +69,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('pulse_theme') === 'light') document.documentElement.classList.remove('dark');
     else document.documentElement.classList.add('dark');
 
-    // رندر اطلاعات کاربر
     const s = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
     s('userName', currentUser.full_name || 'عضو');
     s('userCode', currentUser.member_code || '—');
@@ -66,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // بارگذاری اولیه
     loadData();
     if (window.lucide) lucide.createIcons();
 });
@@ -74,9 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadData() {
     try {
         if (!currentUser || !currentUser.id) throw new Error("کاربر یافت نشد");
-
-        // ۱. اطلاعات مالی
-        const { data, error } = await supabaseClient.rpc('get_member_finance', { p_member_id: currentUser.id });
+        
+        const fetchPromise = supabaseClient.rpc('get_member_finance', { p_member_id: currentUser.id });
+        const { data, error } = await withTimeout(fetchPromise, 5000);
         if (error) throw error;
 
         const installments = data?.installments || [];
@@ -94,13 +111,15 @@ async function loadData() {
         s('attendanceCount', toPersianDigits(attendances.length));
         s('totalAttendanceCount', toPersianDigits(attendances.length));
 
-        // ۲. شهریه‌ها
-        const { data: tuitionsData } = await supabaseClient.rpc('get_member_tuitions', { p_member_id: currentUser.id });
-        renderTuitions(tuitionsData?.tuitions || []);
+        try {
+            const tPromise = supabaseClient.rpc('get_member_tuitions', { p_member_id: currentUser.id });
+            const { data: tuitionsData } = await withTimeout(tPromise, 5000);
+            renderTuitions(tuitionsData?.tuitions || []);
+        } catch(e) { renderTuitions([]); }
 
     } catch (err) {
         console.error('Load error:', err);
-        const errHtml = '<div class="p-6 text-center text-sm text-red-500">خطا در بارگذاری اطلاعات</div>';
+        const errHtml = '<div class="p-6 text-center text-sm text-red-500">خطا در بارگذاری (اتصال کند است)</div>';
         const elPay = document.getElementById('paymentsList'); if (elPay) elPay.innerHTML = errHtml;
         const elInst = document.getElementById('installmentsList'); if (elInst) elInst.innerHTML = errHtml;
         const elAtt = document.getElementById('attendanceGrid'); if (elAtt) elAtt.innerHTML = errHtml;
@@ -116,7 +135,7 @@ function renderInstallments(items) {
         const isOverdue = !item.is_paid && dueDate < new Date();
         let badge = item.is_paid ? 'پرداخت شده' : (isOverdue ? 'معوق' : 'در انتظار');
         let badgeClass = item.is_paid ? 'text-emerald-500' : (isOverdue ? 'text-red-500' : 'text-amber-500');
-        return `<div class="p-4 flex items-center justify-between hover:bg-zinc-800/30 transition-colors"><div class="flex flex-col"><div class="text-sm font-bold text-white mb-1">قسط ${toShamsi(dueDate)}</div><div class="text-[11px] text-zinc-400">سررسید: ${toShamsi(dueDate)}</div></div><div class="text-left"><div class="text-sm font-bold text-amber-500 font-mono">${formatMoney(item.amount)}</div><div class="text-[10px] font-bold mt-1 ${badgeClass}">${badge}</div></div></div>`;
+        return '<div class="p-4 flex items-center justify-between hover:bg-zinc-800/30 transition-colors"><div class="flex flex-col"><div class="text-sm font-bold text-white mb-1">قسط ' + toShamsi(dueDate) + '</div><div class="text-[11px] text-zinc-400">سررسید: ' + toShamsi(dueDate) + '</div></div><div class="text-left"><div class="text-sm font-bold text-amber-500 font-mono">' + formatMoney(item.amount) + '</div><div class="text-[10px] font-bold mt-1 ' + badgeClass + '">' + badge + '</div></div></div>';
     }).join('');
 }
 
@@ -124,7 +143,7 @@ function renderPayments(items) {
     const el = document.getElementById('paymentsList');
     if (!el) return;
     if (!items || items.length === 0) { el.innerHTML = '<div class="p-6 text-center text-sm text-zinc-500">هیچ پرداختی ثبت نشده است</div>'; return; }
-    el.innerHTML = items.slice(0, 10).map(item => `<div class="p-4 flex items-center justify-between hover:bg-zinc-800/30 transition-colors"><div class="flex flex-col"><div class="text-sm font-bold text-white mb-1">${item.payment_type || 'پرداخت'}</div><div class="text-[11px] text-zinc-400">${item.description || '—'} • ${toShamsi(parseAnyDate(item.payment_date))}</div></div><div class="text-left"><div class="text-sm font-bold text-emerald-500 font-mono">${formatMoney(item.amount)}</div></div></div>`).join('');
+    el.innerHTML = items.slice(0, 10).map(item => '<div class="p-4 flex items-center justify-between hover:bg-zinc-800/30 transition-colors"><div class="flex flex-col"><div class="text-sm font-bold text-white mb-1">' + (item.payment_type || 'پرداخت') + '</div><div class="text-[11px] text-zinc-400">' + (item.description || '—') + ' • ' + toShamsi(parseAnyDate(item.payment_date)) + '</div></div><div class="text-left"><div class="text-sm font-bold text-emerald-500 font-mono">' + formatMoney(item.amount) + '</div></div></div>').join('');
 }
 
 function renderAttendances(items) {
@@ -135,7 +154,7 @@ function renderAttendances(items) {
         const date = parseAnyDate(item.attendance_date);
         const isPresent = item.status === 'present';
         const colorClass = isPresent ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' : 'bg-red-500/10 border-red-500/30 text-red-500';
-        return `<div class="border rounded-xl p-2 text-center flex flex-col items-center justify-center ${colorClass}"><div class="text-[10px] font-bold font-mono">${String(date.getMonth()+1).padStart(2,'0')}/${String(date.getDate()).padStart(2,'0')}</div><i data-lucide="${isPresent ? 'check' : 'x'}" class="w-4 h-4 mt-1"></i></div>`;
+        return '<div class="border rounded-xl p-2 text-center flex flex-col items-center justify-center ' + colorClass + '"><div class="text-[10px] font-bold font-mono">' + String(date.getMonth()+1).padStart(2,'0') + '/' + String(date.getDate()).padStart(2,'0') + '</div><i data-lucide="' + (isPresent ? 'check' : 'x') + '" class="w-4 h-4 mt-1"></i></div>';
     }).join('');
     if (window.lucide) lucide.createIcons();
 }
@@ -153,18 +172,9 @@ function renderTuitions(items) {
         const pAmount = document.getElementById('tuitionPaidAmount'); if (pAmount) pAmount.textContent = formatMoney(paid.reduce((s, t) => s + (Number(t.paid_amount) || Number(t.amount) || 0), 0));
         summary.classList.remove('hidden'); summary.classList.add('grid');
     }
-    el.innerHTML = [...items].sort((a, b) => a.is_paid ? 1 : -1).map(item => `<div class="p-4 flex items-center justify-between hover:bg-zinc-800/30 transition-colors"><div class="flex flex-col"><div class="text-sm font-bold text-white mb-1">${formatShamsiMonth(item.month)}</div></div><div class="text-left"><div class="text-sm font-bold text-amber-500 font-mono">${formatMoney(item.amount)}</div></div></div>`).join('');
+    el.innerHTML = [...items].sort((a, b) => a.is_paid ? 1 : -1).map(item => '<div class="p-4 flex items-center justify-between hover:bg-zinc-800/30 transition-colors"><div class="flex flex-col"><div class="text-sm font-bold text-white mb-1">' + formatShamsiMonth(item.month) + '</div></div><div class="text-left"><div class="text-sm font-bold text-amber-500 font-mono">' + formatMoney(item.amount) + '</div></div></div>').join('');
 }
 
-function formatShamsiMonth(month) {
-    if (!month) return '—';
-    const parts = String(month).split('/');
-    if (parts.length !== 2) return month;
-    const names = ['', 'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
-    return `${names[parseInt(parts[1], 10)] || '?'} ${toPersianDigits(parts[0])}`;
-}
-
-// ================= NAVIGATION =================
 window.openSection = function(sectionName) {
     document.getElementById('mainMenu')?.classList.add('hidden');
     document.getElementById('backBtnContainer')?.classList.remove('hidden');
@@ -185,12 +195,9 @@ window.toggleTheme = function() {
     if (isDark) { document.documentElement.classList.remove('dark'); localStorage.setItem('pulse_theme', 'light'); }
     else { document.documentElement.classList.add('dark'); localStorage.setItem('pulse_theme', 'dark'); }
 };
-window.logout = function() {
-    if (confirm('از حساب خارج می‌شوید؟')) { localStorage.removeItem('pulse_user'); window.location.href = 'index.html'; }
-};
+window.logout = function() { if (confirm('از حساب خارج می‌شوید؟')) { localStorage.removeItem('pulse_user'); window.location.href = 'index.html'; } };
 window.contactSupport = function() { window.open(RUBIKA_URL, '_blank'); };
 
-// ================= CHAT LOGIC (FIXED) =================
 let currentChatRoomId = null;
 let chatRefreshTimer = null;
 
@@ -219,35 +226,22 @@ async function loadMemberChatRooms() {
     if (window.lucide) lucide.createIcons();
 
     try {
-        const { data, error } = await supabaseClient.rpc('member_get_chat_rooms', { p_member_id: currentUser.id });
+        const fetchPromise = supabaseClient.rpc('member_get_chat_rooms', { p_member_id: currentUser.id });
+        const { data, error } = await withTimeout(fetchPromise, 5000);
         if (error) throw error;
         
         const rooms = data?.rooms || [];
-        if (rooms.length === 0) {
-            list.innerHTML = '<div class="text-center py-10 text-zinc-500 text-sm">هیچ گفت‌وگویی وجود ندارد</div>';
-            return;
-        }
+        if (rooms.length === 0) { list.innerHTML = '<div class="text-center py-10 text-zinc-500 text-sm">هیچ گفت‌وگویی وجود ندارد</div>'; return; }
 
         list.innerHTML = rooms.map(r => {
             const isPublic = r.room_type === 'public';
             const name = isPublic ? 'گروه عمومی' : 'گفت‌وگو با مدیر';
-            return `
-                <div class="flex items-center gap-3 p-3 bg-[#121215] border border-zinc-800 rounded-xl cursor-pointer hover:border-amber-500 transition-colors" onclick="openMemberChatRoom('${r.room_id}', '${name}')">
-                    <div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400 shrink-0">
-                        <i data-lucide="${isPublic ? 'globe' : 'user'}" class="w-5 h-5"></i>
-                    </div>
-                    <div class="flex-1 min-w-0 text-right">
-                        <div class="text-sm font-bold text-white truncate">${name}</div>
-                        <div class="text-xs text-zinc-400 truncate mt-1">${r.last_message || 'شروع گفتگو'}</div>
-                    </div>
-                    ${r.unread > 0 ? `<div class="bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">${r.unread}</div>` : ''}
-                </div>
-            `;
+            return '<div class="flex items-center gap-3 p-3 bg-[#121215] border border-zinc-800 rounded-xl cursor-pointer hover:border-amber-500 transition-colors" onclick="openMemberChatRoom(\'' + r.room_id + '\', \'' + name + '\')"><div class="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center text-zinc-400 shrink-0"><i data-lucide="' + (isPublic ? 'globe' : 'user') + '" class="w-5 h-5"></i></div><div class="flex-1 min-w-0 text-right"><div class="text-sm font-bold text-white truncate">' + name + '</div><div class="text-xs text-zinc-400 truncate mt-1">' + (r.last_message || 'شروع گفتگو') + '</div></div>' + (r.unread > 0 ? '<div class="bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full">' + r.unread + '</div>' : '') + '</div>';
         }).join('');
         if (window.lucide) lucide.createIcons();
     } catch (err) {
         console.error('Chat rooms error:', err);
-        list.innerHTML = '<div class="text-center py-10 text-red-500 text-sm">خطا در بارگذاری گفتگوها</div>';
+        list.innerHTML = '<div class="text-center py-10 text-red-500 text-sm">' + (err.message === 'Timeout' ? 'اتصال به سرور طول کشید.' : 'خطا در بارگذاری گفتگوها') + '</div>';
     }
 }
 
@@ -257,7 +251,6 @@ async function openMemberChatRoom(roomId, roomName) {
     document.getElementById('chatFsConversation')?.classList.remove('hidden');
     document.getElementById('chatFsConversation')?.classList.add('flex');
     document.getElementById('chatFsTitle').textContent = roomName;
-
     try { await supabaseClient.rpc('member_mark_chat_read', { p_member_id: currentUser.id, p_room_id: roomId }); } catch(e){}
     await loadMemberChatMessages();
     startChatRefresh();
@@ -269,33 +262,20 @@ async function loadMemberChatMessages() {
     if (!list) return;
 
     try {
-        const { data, error } = await supabaseClient.rpc('member_get_chat_messages', { p_member_id: currentUser.id, p_room_id: currentChatRoomId, p_limit: 100 });
+        const fetchPromise = supabaseClient.rpc('member_get_chat_messages', { p_member_id: currentUser.id, p_room_id: currentChatRoomId, p_limit: 100 });
+        const { data, error } = await withTimeout(fetchPromise, 5000);
         if (error) throw error;
         
         const messages = (data?.messages || []).reverse();
-        if (messages.length === 0) {
-            list.innerHTML = '<div class="text-center py-10 text-zinc-500 text-sm">هنوز پیامی وجود ندارد</div>';
-            return;
-        }
+        if (messages.length === 0) { list.innerHTML = '<div class="text-center py-10 text-zinc-500 text-sm">هنوز پیامی وجود ندارد</div>'; return; }
 
         const wasAtBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 150;
-        
         list.innerHTML = messages.map(m => {
             const isMe = m.sender_type === 'member';
-            return `
-                <div class="flex flex-col max-w-[85%] ${isMe ? 'self-end items-end' : 'self-start items-start'}">
-                    <span class="text-[10px] text-zinc-500 mb-1 mx-1">${isMe ? 'من' : 'مدیر'}</span>
-                    <div class="px-4 py-2 text-sm leading-relaxed ${isMe ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl rounded-tr-sm' : 'bg-zinc-800 text-zinc-200 rounded-2xl rounded-tl-sm'}">
-                        ${escapeHtml(m.content)}
-                    </div>
-                </div>
-            `;
+            return '<div class="flex flex-col max-w-[85%] ' + (isMe ? 'self-end items-end' : 'self-start items-start') + '"><span class="text-[10px] text-zinc-500 mb-1 mx-1">' + (isMe ? 'من' : 'مدیر') + '</span><div class="px-4 py-2 text-sm leading-relaxed ' + (isMe ? 'bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl rounded-tr-sm' : 'bg-zinc-800 text-zinc-200 rounded-2xl rounded-tl-sm') + '">' + escapeHtml(m.content) + '</div></div>';
         }).join('');
-
         if (wasAtBottom) setTimeout(() => { list.scrollTop = list.scrollHeight; }, 50);
-    } catch (err) { 
-        console.error('Chat messages error:', err); 
-    }
+    } catch (err) { console.error(err); }
 }
 
 async function sendMemberChatMessage() {
@@ -304,7 +284,6 @@ async function sendMemberChatMessage() {
     const btn = document.getElementById('chatFsSend');
     const content = input?.value.trim();
     if (!content) return;
-
     if (btn) btn.disabled = true;
     try {
         await supabaseClient.rpc('member_send_chat_message', { p_member_id: currentUser.id, p_room_id: currentChatRoomId, p_content: content });
@@ -312,25 +291,11 @@ async function sendMemberChatMessage() {
         await loadMemberChatMessages();
         const list = document.getElementById('chatFsMessages');
         if (list) setTimeout(() => { list.scrollTop = list.scrollHeight; }, 50);
-    } catch (err) { 
-        console.error('Send error:', err); 
-    } finally {
-        if (btn) btn.disabled = false;
-    }
+    } catch (err) { console.error(err); } finally { if (btn) btn.disabled = false; }
 }
 
-function startChatRefresh() {
-    stopChatRefresh();
-    chatRefreshTimer = setInterval(loadMemberChatMessages, 3000);
-}
-function stopChatRefresh() {
-    if (chatRefreshTimer) { clearInterval(chatRefreshTimer); chatRefreshTimer = null; }
-}
-
-function escapeHtml(s) {
-    if (!s) return '';
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
+function startChatRefresh() { stopChatRefresh(); chatRefreshTimer = setInterval(loadMemberChatMessages, 3000); }
+function stopChatRefresh() { if (chatRefreshTimer) { clearInterval(chatRefreshTimer); chatRefreshTimer = null; } }
 
 document.addEventListener('DOMContentLoaded', () => {
     const inp = document.getElementById('chatFsInput');
