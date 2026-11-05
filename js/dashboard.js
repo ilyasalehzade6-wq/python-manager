@@ -1,8 +1,11 @@
 
-function setText(id, text) {
+window.s = function(id, text) {
     const el = document.getElementById(id);
     if (el) el.textContent = text;
-}
+};
+
+
+
 
 let supabaseClient = null;
 let currentUser = null;
