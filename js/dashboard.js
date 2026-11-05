@@ -1,3 +1,9 @@
+
+function setText(id, text) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = text;
+}
+
 let supabaseClient = null;
 let currentUser = null;
 
@@ -69,18 +75,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('pulse_theme') === 'light') document.documentElement.classList.remove('dark');
     else document.documentElement.classList.add('dark');
 
-    const s = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
-    s('userName', currentUser.full_name || 'عضو');
-    s('userCode', currentUser.member_code || '—');
-    s('userAvatar', (currentUser.full_name || 'ع')[0]);
-    s('cardName', currentUser.full_name || '—');
-    s('cardClass', currentUser.class_name || '—');
-    s('cardCode', currentUser.member_code || '—');
+    
+    setText('userName', currentUser.full_name || 'عضو');
+    setText('userCode', currentUser.member_code || '—');
+    setText('userAvatar', (currentUser.full_name || 'ع')[0]);
+    setText('cardName', currentUser.full_name || '—');
+    setText('cardClass', currentUser.class_name || '—');
+    setText('cardCode', currentUser.member_code || '—');
     if (currentUser.join_date) {
         const d = parseAnyDate(currentUser.join_date);
         if (d) {
-            s('cardJoinDate', toShamsi(d));
-            s('memberDays', Math.max(0, Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24))).toLocaleString('fa-IR') + ' روز');
+            setText('cardJoinDate', toShamsi(d));
+            setText('memberDays', Math.max(0, Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24))).toLocaleString('fa-IR') + ' روز');
         }
     }
 
@@ -108,8 +114,8 @@ async function loadData() {
         const menuBadge = document.getElementById('menuTuitionBadge');
         if (menuBadge) { if (unpaid > 0) menuBadge.classList.remove('hidden'); else menuBadge.classList.add('hidden'); }
         
-        s('attendanceCount', toPersianDigits(attendances.length));
-        s('totalAttendanceCount', toPersianDigits(attendances.length));
+        setText('attendanceCount', toPersianDigits(attendances.length));
+        setText('totalAttendanceCount', toPersianDigits(attendances.length));
 
         try {
             const tPromise = supabaseClient.rpc('get_member_tuitions', { p_member_id: currentUser.id });
